@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CameraActivity_test">
+
+<!--  카메라 뷰 띄워보기  -->
+    <com.example.cameratest01.MySurfaceCameraView
+        android:id="@+id/cv_myCamera"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    
+
+<!--    사진 촬영 상단에 -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+            <!--        촬영한 이미지 리스트 보여줌-->
+            <androidx.recyclerview.widget.RecyclerView
+                android:background="@drawable/imagelist_item_border"
+                android:visibility="gone"
+                android:id="@+id/camera_act_rc_imageList"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="16dp"
+                android:paddingHorizontal="5dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="35dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="230dp">
+            </androidx.recyclerview.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/rc_imaeglist_showButton"
+                android:clickable="true"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="9dp"
+                android:paddingVertical="2dp"
+                android:background="@drawable/imagelist_show_border"
+                android:src="@drawable/ic_imagelist_show_arrows_24"
+                app:layout_constraintLeft_toRightOf="@id/camera_act_rc_imageList"
+                app:layout_constraintTop_toTopOf="@id/camera_act_rc_imageList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/rc_imagelist_showAll"
+                android:clickable="true"
+                android:onClick="showImageAll"
+                android:text="전체보기"
+                android:background="@drawable/imagelist_showall"
+                android:layout_marginBottom="5dp"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                app:layout_constraintLeft_toLeftOf="@id/camera_act_rc_imageList"
+                app:layout_constraintRight_toRightOf="@id/camera_act_rc_imageList"
+                app:layout_constraintBottom_toBottomOf="@id/camera_act_rc_imageList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:background="@drawable/buttonlist_show_border"
+                android:padding="4dp"
+                android:layout_marginRight="4dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:id="@+id/camera_act_rc_button_lay"
+                android:layout_width="80dp"
+                android:layout_height="300dp"
+                android:orientation="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/rc_buttonlist_showButton"
+                android:onClick="showButtonList"
+                android:clickable="true"
+                android:src="@drawable/ic_bottom_arrow_24"
+                android:background="@drawable/buttonlist_show_border"
+                app:layout_constraintRight_toLeftOf="@id/camera_act_rc_button_lay"
+                app:layout_constraintTop_toTopOf="@id/camera_act_rc_button_lay"
+                android:layout_width="38dp"
+                android:layout_height="38dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!--    하단 뷰-->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_marginLeft="50dp"
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <!--                오른쪽 리스트중에서 사용자가 선택할 리스트들 보여줌-->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/camera_act_rc_childList"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                    </androidx.recyclerview.widget.RecyclerView>
+
+                </LinearLayout>
+
+                <!--        우측 기능 버튼들 리스트( 반/부[리스트 보여줌], 전체[버튼 보여줌/데이터가져가서], 인원지정[리스트 보여줌], 미촬영자[리스트 보여줌] )-->
+
+
+
+            </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="45dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/camera_act_image"
+                    android:onClick="takePicture"
+                    android:src="@color/white"
+                    app:civ_border_width="0.5dp"
+                    app:civ_border_color="#AEACAC"
+                    android:visibility="visible"
+                    android:clickable="true"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"/>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
