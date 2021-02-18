@@ -2,6 +2,8 @@ package com.example.cameratest01.RC_Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -22,6 +24,8 @@ public class RC_CameraButton_Adapter extends RecyclerView.Adapter {
 
     Context context;
     ArrayList<RC_CameraButton_items> items;
+
+    OrientationEventListener orientationEventListener;// 안먹음
 
     public RC_CameraButton_Adapter(Context context, ArrayList<RC_CameraButton_items> items) {
         this.context = context;
@@ -49,7 +53,10 @@ public class RC_CameraButton_Adapter extends RecyclerView.Adapter {
                 Toast.makeText(context, "클릭시 해당하는 데이터 받아와서 촬영리스트에 추가하기", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
+
+    
 
     @Override
     public int getItemCount() {
@@ -67,6 +74,22 @@ public class RC_CameraButton_Adapter extends RecyclerView.Adapter {
             layout=itemView.findViewById(R.id.rc_cameraButton_lay);
             iv=itemView.findViewById(R.id.rc_cameraButton_image);
             tv=itemView.findViewById(R.id.rc_cameraButton_text);
+
+            orientationEventListener=new OrientationEventListener(itemView.getContext()) {// 화면 회전될때 레이아웃 회전
+                @Override
+                public void onOrientationChanged(int orientation) {
+                    if (orientation >=45 && orientation <135){
+                        layout.setRotation(270);
+                    }else if (orientation>= 135 && orientation<225){
+                        layout.setRotation(180);
+                    }else if (orientation>=225 && orientation<315){
+                        layout.setRotation(90);
+                    }else {
+                        layout.setRotation(0);
+                    }
+                }
+            };
+            orientationEventListener.enable();
         }
     }
 }

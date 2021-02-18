@@ -17,13 +17,14 @@ public class CustomDialog extends AlertDialog {
     public ArrayList<RC_ImageItems> items;
     public ImageView iv;
 
+
     public CustomDialog(Context context, int postion, ArrayList<RC_ImageItems> items) {
         super(context);
         this.postion = postion;
         this.items = items;
     }
 
-    protected CustomDialog(Context context) {
+    public CustomDialog(Context context) {
         super(context);
     }
 

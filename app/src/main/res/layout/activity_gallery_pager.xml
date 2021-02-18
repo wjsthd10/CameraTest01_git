@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gallery_main"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Kids_gallery.GalleryActivity_Pager">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_gallery"
+        android:background="#00A9E0"
+        android:theme="@style/CustomToolbarColorSet"
+        app:popupTheme="@style/Theme.AppCompat"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"/>
+
+<!--    페이징기능 추가-->
+<!--    Recyclerview-->
+
+
+
+<!--    <ImageView-->
+<!--        android:id="@+id/bigImageView_Gallery"-->
+<!--        android:src="@drawable/ic_baseline_photo_24"-->
+<!--        android:background="#dddd"-->
+<!--        android:layout_weight="1"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"/>-->
+
+<!--    <androidx.viewpager.widget.ViewPager-->
+<!--        android:id="@+id/pager_gallery"-->
+<!--        android:layout_weight="1"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp">-->
+
+<!--    </androidx.viewpager.widget.ViewPager>-->
+
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/gallery_rc_bigImg"-->
+<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:layout_weight="1"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"/>-->
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/pager_gallery_test"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="#E3E2E2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.recyclerview.widget.RecyclerView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:id="@+id/gallery_rc_image"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="5dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <LinearLayout
+        android:background="#00c9e0"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:clickable="true"
+            android:onClick="goToGallery"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:src="@drawable/ic_baseline_photo_24"
+                android:layout_width="80dp"
+                android:layout_height="80dp"/>
+            <TextView
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="19sp"
+                android:text="갤러리"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:clickable="true"
+            android:onClick="goToAlbum"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="87dp"
+                android:paddingTop="10dp"
+                android:src="@drawable/ic_outline_add_ffffff_24" />
+            <TextView
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="19sp"
+                android:text="앨범작성"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:clickable="true"
+            android:onClick="addGallery"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:src="@drawable/ic_outline_share_24"
+                android:padding="8dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"/>
+            <TextView
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="19sp"
+                android:text="사진공유"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:onClick="deleteImage"
+            android:clickable="true"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:src="@drawable/ic_twotone_delete_24"
+                android:layout_width="80dp"
+                android:layout_height="80dp"/>
+            <TextView
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="19sp"
+                android:text="사진삭제"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#dddd"
+    android:maxHeight="110dp"
+    android:maxWidth="110dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/rc_grid_img"
+        android:clickable="true"
+        android:scaleType="fitXY"
+        android:onClick="click_img_test"
+        android:padding="2dp"
+        android:src="@drawable/ic_baseline_android_24"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:id="@+id/rc_grid_img_zoom"
+        android:padding="8dp"
+        android:clickable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="@id/rc_grid_img"
+        app:layout_constraintBottom_toBottomOf="@id/rc_grid_img"
+        android:layout_width="38dp"
+        android:layout_height="38dp">
+
+        <ImageView
+            android:id="@+id/rc_grid_zoom"
+            android:background="#7AFFFFFF"
+            android:src="@drawable/ic_baseline_zoom_out_map_24"
+            android:layout_width="25dp"
+            android:layout_height="25dp"/>
+
+    </LinearLayout>
+
+
+
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/rc_check_img"
+        android:layout_margin="8dp"
+        app:layout_constraintTop_toTopOf="@id/rc_grid_img"
+        app:layout_constraintRight_toRightOf="@id/rc_grid_img"
+        app:civ_circle_background_color="#DDBFBFBF"
+        android:src="@drawable/ic_check_ffff_24"
+        android:layout_width="25dp"
+        android:layout_height="25dp"/>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

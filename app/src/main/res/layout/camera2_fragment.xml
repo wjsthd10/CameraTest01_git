@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.example.cameratest01.MyCameraApi2.TextureView_Camera2
+        android:id="@+id/textureView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <LinearLayout
+        android:id="@+id/control"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/camera2_Toolbar"
+            android:background="#00a9e0"
+            android:theme="@style/CustomToolbarColorSet"
+            app:popupTheme="@style/Theme.AppCompat"
+            android:layout_width="match_parent"
+            app:menu="@menu/camera2_toolbar_setting"
+            android:layout_height="?attr/actionBarSize">
+        </androidx.appcompat.widget.Toolbar>
+
+
+        <!--    하단 뷰-->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+<!--            <ImageView-->
+<!--                android:id="@+id/btnListShow"-->
+<!--                android:clickable="true"-->
+<!--                android:src="@drawable/ic_bottom_arrow_24"-->
+<!--                android:background="@drawable/buttonlist_show_border"-->
+<!--                app:layout_constraintTop_toBottomOf="camera_act_rc_button_lay"-->
+<!--                app:layout_constraintRight_toRightOf="camera_act_rc_button_lay"-->
+<!--                android:layout_width="38dp"-->
+<!--                android:layout_height="38dp"/>-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/camera_act_rc_button_lay"-->
+<!--                android:background="@drawable/buttonlist_show_border"-->
+<!--                android:padding="4dp"-->
+<!--                android:layout_marginRight="4dp"-->
+<!--                android:visibility="visible"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintRight_toRightOf="parent"                -->
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="300dp"-->
+<!--                android:orientation="vertical"-->
+<!--                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>-->
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/camera2_btnList"
+                android:padding="4dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="vertical"
+                android:background="@drawable/buttonlist_show_border"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:minWidth="80dp"
+                android:minHeight="80dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:id="@+id/btnListBtnLay"
+                android:clickable="true"
+                app:layout_constraintRight_toRightOf="@id/camera2_btnList"
+                app:layout_constraintTop_toBottomOf="@id/camera2_btnList"
+                android:gravity="center"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/btnListShow"
+                    android:background="@drawable/imagelist_item_border"
+                    android:layout_margin="6dp"
+                    android:src="@drawable/ic_top_arrow_24"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+<!--    리스트 나오는 부분을 네비게이션뷰로 할지 고민    -->
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_marginBottom="45dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/camera_act_image_showImg"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@id/camera_act_image"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginTop="16dp"
+                    android:src="#292929"
+                    app:civ_border_width="0.5dp"
+                    app:civ_border_color="#AEACAC"
+                    android:visibility="visible"
+                    android:clickable="true"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/camera_act_image"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:src="@color/white"
+                    app:civ_border_width="0.5dp"
+                    app:civ_border_color="@color/white"
+                    android:visibility="visible"
+                    android:clickable="true"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+<!--    <LinearLayout-->
+<!--        android:id="@+id/fragment_lay"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <fragment-->
+<!--            android:name="com.example.cameratest01.fragments.BigImageFragment"-->
+<!--            android:id="@+id/bigimage_fg_lay"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            tools:layout="@layout/camera_act_v2_test"/>-->
+
+<!--    </LinearLayout>-->
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

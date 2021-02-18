@@ -5,9 +5,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.ActionProvider;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.cameratest01.CameraActivity_test;
+import com.example.cameratest01.MyInterface.OnItemClick;
+import com.example.cameratest01.MyInterface.RemoveFG_OnClick;
 import com.example.cameratest01.R;
 import com.example.cameratest01.RC_Items.RC_ImageItems;
 import com.example.cameratest01.customDialog.CustomDialog;
@@ -34,22 +39,23 @@ import com.example.cameratest01.fragments.BigImageFragment;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
-public class RC_ImageAdapter extends RecyclerView.Adapter{
+public class RC_ImageAdapter extends RecyclerView.Adapter {
 
 
     ArrayList<RC_ImageItems> items;
+//    Fragment bigImageFragment=new BigImageFragment();
     Bundle bundle=new Bundle();
-//    DialogFragment bigImageFragment=new BigImageFragment();
-    CameraActivity_test mActivity;
     Context context;
+    public OnItemClick mCallback;
+    public RemoveFG_OnClick mRemove;
+    byte[] data;
 
-    CustomDialog customDialog;
-
-
-    public RC_ImageAdapter(Context context, ArrayList<RC_ImageItems> items) {
+    public RC_ImageAdapter(Context context, ArrayList<RC_ImageItems> items, OnItemClick onItemClick, byte[] data) {
         this.context=context;
-        this.items = items;
-    }
+        this.items = items;//이미지 정보 받아옴
+        this.mCallback = onItemClick;
+        this.data=data;//이미지 정보 받아옴
+    }// 생성자에서 온클릭
 
     @NonNull
     @Override
@@ -58,6 +64,9 @@ public class RC_ImageAdapter extends RecyclerView.Adapter{
         View itemView= LayoutInflater.from(context).inflate(R.layout.rc_image_item, parent, false);
         VH_images holder=new VH_images(itemView);
 
+//        bundle.putByteArray("items",data);
+//        bigImageFragment.setArguments(bundle);
+
         return holder;
     }
 
@@ -65,46 +74,22 @@ public class RC_ImageAdapter extends RecyclerView.Adapter{
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         VH_images vh= (VH_images) holder;
 
+//        서페이서 가져와서 이미지 회전
 
+//        Glide.with(context).load(items.get(position).imageBM).into(vh.iv);
         Glide.with(context).load(items.get(position).imageBM).into(vh.iv);
         vh.tv.setText(items.get(position).imageName);
+        vh.iv.setRotation(90);// 리스트에 보여지는 이미지 회전
+
+
 
         vh.lay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "이미지 셈플 클릭", Toast.LENGTH_SHORT).show();
-                // todo 이미지 셈플 클릭시 프레그먼트 다이얼로그형식으로 이미지 확대하여 보여주기. 상단 구석에 x모양으로 삭제 여부 간단하게 표시
-//                ByteArrayOutputStream stream =new ByteArrayOutputStream();
-//                // 스트림 열고 변환하는 과정에서 느림. 스레드 만들어서 따로 돌려야할듯
-//                // 프레그먼트 열기
-//                items.get(position).imageBM.compress(Bitmap.CompressFormat.PNG, 100, stream);
-//                byte[] byteArray=stream.toByteArray();
-//                bundle.putByteArray("image", byteArray);
-//                bundle.putInt("position",position);
-//                bigImageFragment.setArguments(bundle);
-//
-//                mActivity= (CameraActivity_test) context;
-//                FragmentTransaction transaction=mActivity.getSupportFragmentManager().beginTransaction();
-//                bigImageFragment.onCreateDialog(bundle).show();
-//                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-//                transaction.addToBackStack(null);
-////                transaction.add(bigImageFragment, "tag");
-//                transaction.commit();
-
-//                ImageView imageView=mActivity.findViewById(R.id.bigImage_D);
-//                AlertDialog.Builder builder=new AlertDialog.Builder(context);
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                    builder.setView(R.layout.bigimage_fg);
-//                }
-//                builder.create().show();
-                Dialog dialog=new Dialog(context);
-                dialog.setContentView(R.layout.custom_dialog_lay);
-                customDialog.iv.findViewById(R.id.custom_image);
-                Glide.with(context).load(items.get(position).imageBM).into(customDialog.iv);
-                dialog.show();
-
+                mCallback.onClick(items, position);
             }
         });
+
 
     }
 
@@ -112,6 +97,8 @@ public class RC_ImageAdapter extends RecyclerView.Adapter{
     public int getItemCount() {
         return items.size();
     }
+
+
 
     class VH_images extends RecyclerView.ViewHolder{
 
@@ -125,6 +112,7 @@ public class RC_ImageAdapter extends RecyclerView.Adapter{
             lay=itemView.findViewById(R.id.rc_imageList_item);
             iv=itemView.findViewById(R.id.rc_imageList_imageView);
             tv=itemView.findViewById(R.id.rc_imageList_textView);
+
 
         }
     }
