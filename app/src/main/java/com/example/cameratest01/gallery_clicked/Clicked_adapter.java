@@ -22,6 +22,7 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
     ArrayList<ImageData> imageData;
     int position;
     ArrayList<String> images;
+    GridViewGallery activity;
 
 
     public Clicked_adapter(@NonNull FragmentManager fm) {
@@ -31,6 +32,7 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
     public Clicked_adapter(@NonNull FragmentManager fm, Context context, ArrayList<ImageData> imageData, int position) {
         super(fm);
         this.context = context;
+        activity=(GridViewGallery) context;
         this.imageData = imageData;
         this.position = position;
     }
@@ -38,6 +40,7 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
     public Clicked_adapter(@NonNull FragmentManager fm, Context context, ArrayList<ImageData> imageData, int position, ArrayList<String> images) {
         super(fm);
         this.context = context;
+        activity=(GridViewGallery) context;
         this.imageData = imageData;
         this.position = position;
         this.images = images;
@@ -65,10 +68,22 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
 
     @Override
     public int getCount() {
-        if (images!=null){
-            return images.size();
+        if (activity.GALLERY_TYPE.equals("D")){
+            Log.e("GALLERY_TYPE_SHOW", " - "+activity.GALLERY_TYPE);
+            try {
+                return images.size();
+            }catch (NullPointerException e) {
+                return imageData.size();
+            }
+        }else {
+            Log.e("GALLERY_TYPE_SHOW", " - "+activity.GALLERY_TYPE);
+            try {
+                return imageData.size();
+            }catch (NullPointerException e){
+                return images.size();
+            }
+
         }
-        return imageData.size();
     }
 
 

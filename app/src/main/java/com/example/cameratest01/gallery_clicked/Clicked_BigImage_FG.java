@@ -56,7 +56,7 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
         images=bundle.getStringArrayList("images");
         AC_imageData=bundle.getParcelableArrayList("AC_imageData");
 
-        if (images!=null){// 개본 갤러리 데이터 있을때 실행
+        if (gridViewGallery.GALLERY_TYPE.equals("D")){// 개본 갤러리 일때 실행
             adapter=new Clicked_adapter(getChildFragmentManager(), getActivity(), AC_imageData, position, images);
             viewPager.setAdapter(adapter);
             viewPager.setCurrentItem(position);
@@ -77,6 +77,7 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {// 여기서 메뉴작성
 
                     gridViewGallery.pagePosition=position;// 변경된 페이지 번호 전달.
+                    Log.e("D_pagePosition", " - "+position);
                     if (AC_imageData.get(position).Check==0){
                         Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_b_24).into(gridViewGallery.checkImgView);
                     }else if (AC_imageData.get(position).Check==1){
@@ -93,7 +94,7 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
                 }
             });
 
-        }else {// 기본갤러리 아닐때 실행.
+        }else {// 키즈사랑 갤러리에서 실행
             adapter=new Clicked_adapter(getChildFragmentManager(),getActivity(), imageData, position);
             viewPager.setAdapter(adapter);
             viewPager.setCurrentItem(position);
@@ -114,6 +115,7 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {// 여기서 메뉴작성
 
                     gridViewGallery.pagePosition=position;// 변경된 페이지 번호 전달.
+                    Log.e("K_pagePosition", " - "+position);
                     if (imageData.get(position).Check==0){
                         Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_b_24).into(gridViewGallery.checkImgView);
                     }else if (imageData.get(position).Check==1){

@@ -591,7 +591,7 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressWarnings("SuspiciousNameCombination")
-    public void setUpCameraOutputs(int width, int height){
+    public void setUpCameraOutputs(int width, int height){// todo 사진 저장코드 확인하기!!!!
         Activity activity=getActivity();
         CameraManager manager= (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
@@ -678,7 +678,7 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
 
 
 
-    private void configureTransform(int viewWidth, int viewHeight){
+    private void configureTransform(int viewWidth, int viewHeight){// todo 사진 저장할때 회전값 저장하는 부분임 확인!! viewWidth값이랑 viewHeight값 어떻게 줘야할지 생각해보기...
         Activity activity=getActivity();
         if (null==mTextureView || null == mPreviewSize || null == activity){
             return;
@@ -693,6 +693,7 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
         if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {// 디바이스 회전각도 수직일때...
             Log.e("화면 90 : ", "90");
             bufferRect.offset(centerX-bufferRect.centerX(), centerY-bufferRect.centerX());
+
             matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
             float scale=Math.max(
                     (float) viewHeight/mPreviewSize.getHeight(),
@@ -737,7 +738,7 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
         }
     }
 
-    private static class ImageSaver implements Runnable{// 사진 저장 메소드
+    private static class ImageSaver implements Runnable{// todo 사진 저장 메소드
 
         private final Image mImage;
         private final File  mFile;

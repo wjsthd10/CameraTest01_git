@@ -5,30 +5,53 @@ import android.os.Parcelable;
 
 public class ImageData implements Parcelable {
 
-    public String ImageName;
-    public String ImagePath;
+    public String ImageName="";
+    public String ImagePath="";
+    // 원본경로 비교위해서 추가
+    public String basicPath="";
     public int Check;
     public int Position;
     public int Dposition;
     public int Rposition;
     public int CheckNum=0;
     public int rotNum=0;
-    public float rotateNum=0;
+    public float rotateNum=0;// 변경된 회전값.
+    public float orirotateNum=0;// 이미지가 갖고있는 회전값
+    public String imageType="";    // K:키즈사랑 갤러리, D:기본 갤러리
+    public String imagesPath="";
 
-    public ImageData(String imageName, String imagePath, int check, int position, int dposition, int rposition) {
-        ImageName = imageName;
-        ImagePath = imagePath;
-        Check = check;
-        Position = position;
-        Dposition = dposition;
-        Rposition = rposition;
+    public String getImageType() {
+        return imageType;
     }
 
-    public ImageData(String imageName, String imagePath, int check, int position) {
-        ImageName = imageName;
-        ImagePath = imagePath;
-        Check = check;
-        Position = position;
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
+//    public ImageData(String imageName, String imagePath, int check, int position, int dposition, int rposition) {
+//        ImageName = imageName;
+//        ImagePath = imagePath;
+//        Check = check;
+//        Position = position;
+//        Dposition = dposition;
+//        Rposition = rposition;
+//    }
+
+    public ImageData(String imageName, String imagePath, int check, int position, String imageType) {
+        this.ImageName = imageName;
+        this.ImagePath = imagePath;
+        this.Check = check;
+        this.Position = position;
+        this.imageType=imageType;
+    }
+
+    public ImageData(String imageName, String imagePath, int check, int position, int rotateNum, float orirotateNum, String imageType) {
+        this.ImageName = imageName;
+        this.ImagePath = imagePath;
+        this.Check = check;
+        this.Position = position;
+        this.rotateNum = rotateNum;
+        this.orirotateNum = orirotateNum;
+        this.imageType=imageType;
     }
 
     protected ImageData(Parcel in) {
@@ -38,6 +61,7 @@ public class ImageData implements Parcelable {
         Position=in.readInt();
         Dposition=in.readInt();
         Rposition=in.readInt();
+        orirotateNum=in.readFloat();
     }
 
     public static final Creator<ImageData> CREATOR = new Creator<ImageData>() {
@@ -65,5 +89,85 @@ public class ImageData implements Parcelable {
         dest.writeInt(Position);
         dest.writeInt(Dposition);
         dest.writeInt(Rposition);
+    }
+
+    public String getImageName() {
+        return ImageName;
+    }
+
+    public void setImageName(String imageName) {
+        ImageName = imageName;
+    }
+
+    public String getImagePath() {
+        return ImagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        ImagePath = imagePath;
+    }
+
+    public int getCheck() {
+        return Check;
+    }
+
+    public void setCheck(int check) {
+        Check = check;
+    }
+
+    public int getPosition() {
+        return Position;
+    }
+
+    public void setPosition(int position) {
+        Position = position;
+    }
+
+    public int getDposition() {
+        return Dposition;
+    }
+
+    public void setDposition(int dposition) {
+        Dposition = dposition;
+    }
+
+    public int getRposition() {
+        return Rposition;
+    }
+
+    public void setRposition(int rposition) {
+        Rposition = rposition;
+    }
+
+    public int getCheckNum() {
+        return CheckNum;
+    }
+
+    public void setCheckNum(int checkNum) {
+        CheckNum = checkNum;
+    }
+
+    public int getRotNum() {
+        return rotNum;
+    }
+
+    public void setRotNum(int rotNum) {
+        this.rotNum = rotNum;
+    }
+
+    public float getRotateNum() {
+        return rotateNum;
+    }
+
+    public void setRotateNum(float rotateNum) {
+        this.rotateNum = rotateNum;
+    }
+
+    public float getOrirotateNum() {
+        return orirotateNum;
+    }
+
+    public void setOrirotateNum(float orirotateNum) {
+        this.orirotateNum = orirotateNum;
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,6 +44,7 @@ public class New_images_FG extends Fragment {
         try {
             super.onCreate(savedInstanceState);
             gridViewGallery= (GridViewGallery) getActivity();
+//            Toast.makeText(gridViewGallery, "create", Toast.LENGTH_SHORT).show();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -53,6 +55,7 @@ public class New_images_FG extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {// 3.
         View view=inflater.inflate(R.layout.gridview_fg_new, container, false);
+//        Toast.makeText(gridViewGallery, "createView", Toast.LENGTH_SHORT).show();
         try {
             recyclerView=view.findViewById(R.id.new_rc_image_grid);
 //        GridLayoutManager gm=new GridLayoutManager(gridViewGallery, 4, GridLayoutManager.VERTICAL, true);
@@ -63,6 +66,7 @@ public class New_images_FG extends Fragment {
 
             adapter=new New_Adapter(gridViewGallery, imageData);// fragemtn의 activity 전달해서 에러난거임 activity생성해서 activity의 context전달.
             recyclerView.setAdapter(adapter);
+            adapter.setType("K");// 타입 지정
 
             return view;
         }catch (Exception e){

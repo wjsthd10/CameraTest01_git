@@ -85,12 +85,12 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
         gridViewGallery=(GridViewGallery)view.getContext();
         context=gridViewGallery;
         iv=view.findViewById(R.id.image_pager);
-        ArrayList<Float> floats=new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            floats=gridViewGallery.getSharedPreferences();
-//            Glide.with(context).load(lists[position]).transform(new RotateTransformation(floats.get(position))).into(iv);
-//            Log.e("floats", floats.toString());
-        }
+//        ArrayList<Float> floats=new ArrayList<>();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            floats=gridViewGallery.getSharedPreferences();
+////            Glide.with(context).load(lists[position]).transform(new RotateTransformation(floats.get(position))).into(iv);
+////            Log.e("floats", floats.toString());
+//        }
 
         if (gridViewGallery.returnVal){// 회전눌렀을때 이미지 표시...
 //            Toast.makeText(context, "test", Toast.LENGTH_SHORT).show();
@@ -105,78 +105,30 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
 
             // 여기에 회전값 넣어서 이미지 보여주기...
             if (AC_imageData!=null && images !=null){
-                Log.e("ImgFGpager_Test", ", i : "+AC_imageData.get(position).rotateNum);
+                Log.e("ImgFGpager_Test", ", i : "+AC_imageData.get(position).getRotateNum());
                 if (AC_imageData.size()<=position) position=position-1;
 //                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(gridViewGallery.degree)).into(iv);
+                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).getRotateNum())).into(iv);
 //                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(270)).into(iv);
             }else if (imageData!=null){
-                Log.e("ImgFGpager_Test", ", i : "+imageData.get(position).rotateNum);
+                Log.e("ImgFGpager_Test", ", i : "+imageData.get(position).getRotateNum());
                 if (imageData.size()<=position) position=position-1;
 //                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);// 270으로 회전시킨 이미지만 보여지지 않음....
-                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(degree)).into(iv);
+                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).getRotateNum())).into(iv);// 원래 degree사용했음
             }
 
         }else {// 회전안눌렀을때 이미지 표시...
 //            Log.e("rotChac", "returnVal else");
             if (AC_imageData!=null && images!=null){// 기본갤러리 데이터있을때
                 if (AC_imageData.size()<=position) position=position-1;
-                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(0)).into(iv);
-//                try {
-//                    ExifInterface exif=new ExifInterface(images.get(position));
-//                    int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-//                    Log.e("ExifInterface_Int", "name : "+images.get(position)+" + "+position+"");
-//                    Log.e("ExifInterface_Int", "name : "+AC_imageData.get(position).rotateNum);
-//                    switch (orientation){
-//                        case ExifInterface.ORIENTATION_ROTATE_90:{//==6
-//                            AC_imageData.get(position).rotateNum=90;
-//                            Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_180:{//==3
-//                            AC_imageData.get(position).rotateNum=180;
-//                            Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_270:{//==8
-//                            AC_imageData.get(position).rotateNum=270;
-//                            Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        default:{
-//                            AC_imageData.get(position).rotateNum=0;
-//                            Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                int ori=getOrientateionOfImage(images.get(position));
+                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).getOrirotateNum())).into(iv);
+
             }else if (imageData!=null){
-                Log.e("flatRotateKideShow", " pagerin = "+gridViewGallery.switchNum);
+                Log.e("ImgFGpager_Test", ", else if : "+imageData.get(position).getRotateNum());
                 if (imageData.size()<=position) position=position-1;// 페이저에서 이미지 삭제할때 마지막 이미지 삭제하면 index error나옴
-//                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
-//                try {
-//                    ExifInterface exif=new ExifInterface(imageData.get(position).ImagePath);
-//                    int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-//                    switch (orientation){
-//                        case ExifInterface.ORIENTATION_ROTATE_90:{
-//                            imageData.get(position).rotateNum=90;
-//                            Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_180:{
-//                            imageData.get(position).rotateNum=180;
-//                            Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_270:{
-//                            imageData.get(position).rotateNum=270;
-//                            Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                        default:{
-//                            imageData.get(position).rotateNum=0;
-//                            Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
-//                        }break;
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(floats.get(position))).into(iv);// sharedPreferences에서 받아온 회전값 사용.
+                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).getOrirotateNum())).into(iv);// sharedPreferences에서 받아온 회전값 사용.
+//                Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(90)).into(iv);
             }
 
 //        iv.setImageResource(R.drawable.ic_check_circle_b_24);
@@ -186,13 +138,31 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
 
 //            Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(iv);
         }
-
 //        // 순서 설정....
 //        gridViewGallery=(GridViewGallery)view.getContext();
     }
 
 
+    public int getOrientateionOfImage(String filePath){
+        ExifInterface exif=null;
+        try {
+            exif=new ExifInterface(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
 
+        int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
+
+        if (orientation != -1){
+            switch (orientation){
+                case ExifInterface.ORIENTATION_ROTATE_90:return 90;
+                case ExifInterface.ORIENTATION_ROTATE_180:return 180;
+                case ExifInterface.ORIENTATION_ROTATE_270:return 270;
+            }
+        }
+        return 0;
+    }
 
 
 }

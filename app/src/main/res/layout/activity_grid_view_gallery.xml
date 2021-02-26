@@ -11,15 +11,13 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_grid_gallery"
-        android:background="#00A9E0"
-        app:menu="@menu/grid_gallery_toolbar_icons"
-        android:theme="@style/CustomToolbarColorSet"
-        app:popupTheme="@style/Theme.AppCompat"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:layout_collapseMode="pin">
-    </androidx.appcompat.widget.Toolbar>
-
+        android:background="#295AD8"
+        android:theme="@style/CustomToolbarColorSet"
+        app:layout_collapseMode="pin"
+        app:menu="@menu/grid_gallery_toolbar_icons"
+        app:popupTheme="@style/Theme.AppCompat"></androidx.appcompat.widget.Toolbar>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navBar"

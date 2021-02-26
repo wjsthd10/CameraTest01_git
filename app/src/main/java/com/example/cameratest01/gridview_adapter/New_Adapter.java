@@ -1,6 +1,8 @@
 package com.example.cameratest01.gridview_adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,62 +50,94 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelete {
 
     Context context;
-    ArrayList<String> fileNames;
-
     File direct;
-    String[] fileListArr;
-    public int position=0;
-    ArrayList<Integer> positions=new ArrayList<>();
-//    ArrayList<ImageData> imageData=new ArrayList<>();
-    ArrayList<ImageData> imageData;  //  전체 데이터
-    GridViewGallery gridViewGallery;
-    Fragment fragment;
-    int countNum=0;
+//    public int position=0;
+    File[] lists;
+    ArrayList<ImageData> imageData_test;  //  키즈사랑 갤러리, 기본 갤러리 => 이거로 이미지 출력하기
+    ArrayList<ImageData> imageData;  //  전체 데이터 => 이거로 이미지 출력하지 않고 받아오기만 하고 분류는 setFlag에서 하기.....K, D로 분류
+    ArrayList<String> imagesArr;     // 기본갤러리 이미지 데이터
+
+    GridViewGallery gridViewGallery;  // GridViewGallery의 Activity 가져옴
+    Fragment fragment;// 클릭시 크게 보여주는 프레그먼트
+    int countNum=0;// 리스트 사이즈
 
     ArrayList<Float> rotNumKidesImg=new ArrayList<>();
+    // 타입 추가하기
+    private String TYPE="K";// K : 키즈사랑, D : 기본갤러리
+    public String SELECT_TYPE="C";// C : 선택으로 택스트 보여질때, S : 전송으로 택스트 보여질때
 
-
-    public void setItem(ArrayList<ImageData> itemArr){
-        this.imageData = itemArr;
-        countNum=itemArr.size();
+    public void setType(String TYPE){
+        this.TYPE=TYPE;
     }
 
-    public New_Adapter(Context context, ArrayList<ImageData> imageData) {
+    public void setSelectType(String TYPE){
+        this.SELECT_TYPE=TYPE;
+        Log.e("Click_S = ","setSelectType : "+SELECT_TYPE);
+        //notifyDataSetChanged();
+    }
+
+    public String getSelectType() {
+        return SELECT_TYPE;
+    }
+
+    public void setItem(ArrayList<ImageData> itemArr){// 이거 하나만 사용하기...
+        this.imageData = itemArr;
+//        countNum=itemArr.size();// 이거도 변경해야함..
+        for (int i = 0; i < imageData.size(); i++) {
+            setFlag(imageData.get(i).getImageType());
+        }
+    }
+
+    public void setItem(ArrayList<String> imagesArr, ArrayList<ImageData> imageData){// 삭제
+        this.imagesArr=imagesArr;
+        this.imageData=imageData;
+    }
+
+    public void setFlag(String flag){// 이거 하나로 데이터 구분하기...
+        imageData_test.clear();
+        if(flag.equals("K")){
+            for (int i = 0; i < imageData.size(); i++) {
+                if(imageData.get(i).imageType.equals("K")){
+                    imageData_test.add(imageData.get(i));
+                    countNum=imageData_test.size();
+                }
+            }
+        }else{
+            for (int i = 0; i < imageData.size(); i++) {
+                if(imageData.get(i).imageType.equals("D")){
+                    imageData_test.add(imageData.get(i));
+                    countNum=imageData_test.size();
+                }
+            }
+        }
+    }
+
+    public New_Adapter(Context context, ArrayList<ImageData> imageData) {// 키즈사랑 갤러리 어뎁터 생성자
         this.context = context;
         this.imageData = imageData;
 
         direct=new File(context.getFilesDir(), "CameraTest01"+File.separator+"kidsLove");
         Log.e("direct File : ", direct.listFiles().length+"");
         if (!direct.exists()) {
-            if (!direct.mkdirs()) {
-                Log.d("TAG", "failed to create directory");
-            }
+            direct.mkdirs();
         }
+        lists=direct.listFiles();
+        Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
     }
 
-//        public New_Adapter(Context context, ArrayList<String> fileNames) {// 1
-//        this.context = context;
-//        this.fileNames = fileNames;
-//        direct=new File(context.getFilesDir(), "CameraTest01"+File.separator+"kidsLove");
-//        Log.e("direct File : ", direct.listFiles().length+"");
-//        if (!direct.exists()) {
-//            if (!direct.mkdirs()) {
-//                Log.d("TAG", "failed to create directory");
-//            }
-//        }
-//        fileListArr=direct.list();
-//        File[] lists=direct.listFiles();
-//        for (int i = 0; i < fileListArr.length; i++) {
-//            imageData.add(new ImageData(lists[i].getName(), lists[i].getAbsolutePath(), 0, i));
-//        }
-//    }
-
+    public New_Adapter(Context context, ArrayList<ImageData> imageData, ArrayList<String> imagesArr) { // 기본갤러리 어뎁터 생성자
+        this.context = context;
+        this.imageData = imageData;
+        this.imagesArr = imagesArr;
+        Collections.reverse(imageData);
+    }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View itemView= LayoutInflater.from(context).inflate(R.layout.grid_image_item, parent, false);
+        // 받아온 타입에 따라서 VH의 형태 변경 가능하다.
         VH holder=new VH(itemView);
 //        Log.e("startViewNum : ", "onCreateViewHolder");
         return holder;
@@ -111,109 +145,166 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        VH vh= (VH) holder;
-        positions.add(position);
+        Log.e("Click_S = ", "0>  Gallery : "+TYPE+" |select : "+this.SELECT_TYPE);
 
+        VH vh= (VH) holder;
         GridViewGallery activity=(GridViewGallery) context;
 
         fragment=new Clicked_BigImage_FG();
-        File[] lists=direct.listFiles();
-        Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
+        Log.e("Click_S = ", "1>  Gallery : "+TYPE+" |select : "+this.SELECT_TYPE);
 
-        Matrix matrix=new Matrix();
+        if (TYPE.equals("K")){// 키즈사랑 갤러리 이미지 리스트 보여주는 부분
+            try {
+                    if (imageData.size()<=0 && imageData.get(position).getRotateNum()==0){
+                        imageData.get(position).ImageName=lists[position].getName();
+                        imageData.get(position).ImagePath=lists[position].getAbsolutePath();
+                    }
+                    Glide.with(context)
+                            .load(lists[position])
+                            .transform(new RotateTransformation(imageData.get(position).getRotateNum()))
+                            .into(vh.iv);
+
+//                    File file=new File(direct, imageData.get(position).ImageName);
+//                    Bitmap bitmap= BitmapFactory.decodeFile(file.getAbsolutePath());
+//                    Matrix matrix=new Matrix();
+//                    matrix.postRotate(imageData.get(position).getOrirotateNum());
+//                    bitmap=Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,true);
+//                    vh.iv.setImageBitmap(bitmap);
+//                속도가 무지 느려짐...
+
+                    Log.e("activity_data_show", " - degree : "+activity.direct.toString());
+                    Log.e("activity_data_show", " - degree : "+activity.direct.list()[position]);
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
 
-
-        try {
-            if (imageData.size()<=0 && imageData.get(position).rotateNum==0){
-                imageData.get(position).ImageName=lists[position].getName();
-                imageData.get(position).ImagePath=lists[position].getAbsolutePath();
-
-            }
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//                rotNumKidesImg=gridViewGallery.getSharedPreferences();
-//            }
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                ArrayList<Float> floats=new ArrayList<>();
-                floats=activity.getSharedPreferences();
-                Glide.with(context).load(lists[position]).transform(new RotateTransformation(floats.get(position))).into(vh.iv);
-                Log.e("floats", floats.toString());
-            }else {
-                Glide.with(context).load(lists[position]).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(vh.iv);
-            }
-//          // shared
-//          Glide.with(context).load(lists[position]).transform(new RotateTransformation(imageData.get(position).rotateNum)).into(vh.iv);
-//            Glide.with(context).load(lists[position]).transform(new RotateTransformation(0)).into(vh.iv);
-
-//          Log.e("rotateNum_Test : ", " - "+imageData.get(position).rotateNum);
-          Log.e("activity_data_show", " - degree : "+activity.degree);
-          Log.e("activity_data_show", " - degree : "+activity.direct.toString());
-          Log.e("activity_data_show", " - degree : "+activity.direct.list()[position]);
-
-      }catch (Exception e){
-          e.printStackTrace();
-      }
-//        imageData.get(position).ImageName=lists[position].getName();
-//        imageData.get(position).ImagePath=lists[position].getAbsolutePath();
-//        Glide.with(context).load(lists[position]).into(vh.iv);
-        // todo 받아올때도 데이터 역순으로 돌려야함.
-        if (imageData.get(position).Check==1){// 어차피 뷰를 묶어서 보여주려면 지나야 하는 구간임 재활용 되고 다시 실행됨....
-            Glide.with(context).load(R.drawable.ic_check_circle_w_24).into(vh.check);
-        }else if (imageData.get(position).Check==0){
-            Glide.with(context).load(R.drawable.ic_check_circle_b_24).into(vh.check);
+        }else if (TYPE.equals("D")){// 기본갤러리 이미지 리스트 보여주는 부분
+//            Collections.reverse(imagesArr);
+            Glide.with(context)
+                    .load(imagesArr.get(position))
+                    .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))
+                    .placeholder(R.drawable.ic_baseline_no_image_24).into(vh.iv);// 사진보여줌.
+            Log.e("getOrirotateNum", " - "+imageData.get(position).getOrirotateNum()+" / name : "+imageData.get(position).getImageName());
         }
 
-        vh.iv.setOnClickListener(new View.OnClickListener() {// 이미지 클릭하여 선택 버튼
-            @Override
-            public void onClick(View v) {
 
-                if (imageData.get(position).Check==0){
-                    Glide.with(context).load(R.drawable.ic_check_circle_w_24).into(vh.check);
-                    imageData.get(position).Check=1;
-//                    Log.e("Click_", "imageData_check : "+imageData.get(position).Check+" : "+position);
-                    imageData.get(position).Position=position;
-                }else if (imageData.get(position).Check==1){
-                    Glide.with(context).load(R.drawable.ic_check_circle_b_24).into(vh.check);
-                    imageData.get(position).Check=0;
-//                    Log.e("Click_", "imageData_check : "+imageData.get(position).Check);
-                }
-            }
-        });
+        if (SELECT_TYPE.equals("C")){// 선택 일때 이미지 클릭 리스너들..
+            Log.e("Click_S", " : inC : "+SELECT_TYPE);
+            vh.check.setVisibility(View.GONE);
+            vh.zoom.setVisibility(View.GONE);
 
-        vh.zoom.setOnClickListener(new View.OnClickListener() {// 사진 확대 버튼 클릭
-            @Override
-            public void onClick(View v) {// 1. 클릭시 뷰페이저 프레그먼트 보여줌
+            vh.iv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // 1. 클릭시 뷰페이저 프레그먼트 보여줌
 //                Toast.makeText(context, "이미지 확대", Toast.LENGTH_SHORT).show();
-                // viewpager fragmet로 작업하기. + adapter
-                Bundle bundle=new Bundle();
-                bundle.putInt("position", position);
-                bundle.putParcelableArrayList("imageData", imageData);
+                    Log.e("showPositionInAdapter", "  po : "+position);
+                    // viewpager fragmet로 작업하기. + adapter
+                    Bundle bundle=new Bundle();
+                    if (TYPE.equals("D")){
+                        bundle.putInt("position", position);
+                        bundle.putParcelableArrayList("AC_imageData", imageData);// AC_imageData
+                        bundle.putStringArrayList("images", imagesArr);
+                    }else {
+                        bundle.putInt("position", position);
+                        bundle.putParcelableArrayList("imageData", imageData);
+                    }
 
-                gridViewGallery=(GridViewGallery)v.getContext();
-                fragment.setArguments(bundle);
-                FragmentManager manager=gridViewGallery.getSupportFragmentManager();
-                FragmentTransaction transaction=manager.beginTransaction();
-                transaction.addToBackStack(null);
-                transaction.replace(R.id.pager_gridview, fragment);
-                transaction.commit();
-                // 툴바 설정 변경해야함.
+                    gridViewGallery=(GridViewGallery)v.getContext();
+                    fragment.setArguments(bundle);
+                    FragmentManager manager=gridViewGallery.getSupportFragmentManager();
+                    FragmentTransaction transaction=manager.beginTransaction();
+                    transaction.addToBackStack(null);
+                    transaction.replace(R.id.pager_gridview, fragment);
+                    transaction.commit();
+                    // 툴바 설정 변경해야함.
 
-                gridViewGallery.bnv.setVisibility(View.GONE);
-                gridViewGallery.bottomNav.setVisibility(View.VISIBLE);
-                gridViewGallery.toolbar.setBackgroundColor(ContextCompat.getColor(gridViewGallery, R.color.custom_toolbar_c));
-                gridViewGallery.toolbar.setTitleTextColor(ContextCompat.getColor(gridViewGallery,R.color.custom_toolbar_c));
-                // 메뉴 버튼 변경
-                Menu menu=gridViewGallery.toolbar.getMenu();
-                menu.removeGroup(R.id.grid_toolbar_menu);
+                    gridViewGallery.bnv.setVisibility(View.GONE);
+                    gridViewGallery.bottomNav.setVisibility(View.VISIBLE);
+                    gridViewGallery.toolbar.setBackgroundColor(ContextCompat.getColor(gridViewGallery, R.color.custom_toolbar_c));
+                    gridViewGallery.toolbar.setTitleTextColor(ContextCompat.getColor(gridViewGallery,R.color.custom_toolbar_c));
+                    // 메뉴 버튼 변경
+                    Menu menu=gridViewGallery.toolbar.getMenu();
+                    menu.removeGroup(R.id.grid_toolbar_menu);
 //                menu.add(R.id.bigimg_click_menu, R.id.rotate, 0, "");
 //                gridViewGallery.toolbar.inflateMenu(R.menu.fg_bigimg_clicked_menu);
-                gridViewGallery.zoomOut=0;
-                Log.e("show_position : _ ", "bundle"+position);
-            }// onclick_imageview
-        });
+                    gridViewGallery.zoomOut=0;
+                    Log.e("show_position : _ ", "bundle"+position);
+                }
+            });
+
+        }
+        if (SELECT_TYPE.equals("S")){// 전송일때 이미지 클릭 이벤트들
+            Log.e("Click_S", " : inS : "+SELECT_TYPE);
+            vh.check.setVisibility(View.VISIBLE);
+            vh.zoom.setVisibility(View.VISIBLE);
+
+            if (imageData.get(position).Check==1){// 어차피 뷰를 묶어서 보여주려면 지나야 하는 구간임 재활용 되고 다시 실행됨....
+                Glide.with(context).load(R.drawable.ic_check_circle_w_24).into(vh.check);
+            }else if (imageData.get(position).Check==0){
+                Glide.with(context).load(R.drawable.ic_check_circle_b_24).into(vh.check);
+            }
+
+            vh.iv.setOnClickListener(new View.OnClickListener() {// 이미지 클릭하여 선택 버튼
+                @Override
+                public void onClick(View v) {
+
+                    if (imageData.get(position).Check==0){
+                        Glide.with(context).load(R.drawable.ic_check_circle_w_24).into(vh.check);
+                        imageData.get(position).Check=1;
+//                    Log.e("Click_", "imageData_check : "+imageData.get(position).Check+" : "+position);
+                        imageData.get(position).Position=position;
+                    }else if (imageData.get(position).Check==1){
+                        Glide.with(context).load(R.drawable.ic_check_circle_b_24).into(vh.check);
+                        imageData.get(position).Check=0;
+//                    Log.e("Click_", "imageData_check : "+imageData.get(position).Check);
+                    }
+                }
+            });
+
+            vh.zoom.setOnClickListener(new View.OnClickListener() {// 사진 확대 버튼 클릭
+                @Override
+                public void onClick(View v) {// 1. 클릭시 뷰페이저 프레그먼트 보여줌
+//                Toast.makeText(context, "이미지 확대", Toast.LENGTH_SHORT).show();
+                    Log.e("showPositionInAdapter", "  po : "+position);
+                    // viewpager fragmet로 작업하기. + adapter
+                    Bundle bundle=new Bundle();
+                    if (TYPE.equals("D")){
+                        bundle.putInt("position", position);
+                        bundle.putParcelableArrayList("AC_imageData", imageData);// AC_imageData
+                        bundle.putStringArrayList("images", imagesArr);
+                    }else {
+                        bundle.putInt("position", position);
+                        bundle.putParcelableArrayList("imageData", imageData);
+                    }
+
+                    gridViewGallery=(GridViewGallery)v.getContext();
+                    fragment.setArguments(bundle);
+                    FragmentManager manager=gridViewGallery.getSupportFragmentManager();
+                    FragmentTransaction transaction=manager.beginTransaction();
+                    transaction.addToBackStack(null);
+                    transaction.replace(R.id.pager_gridview, fragment);
+                    transaction.commit();
+                    // 툴바 설정 변경해야함.
+
+                    gridViewGallery.bnv.setVisibility(View.GONE);
+                    gridViewGallery.bottomNav.setVisibility(View.VISIBLE);
+                    gridViewGallery.toolbar.setBackgroundColor(ContextCompat.getColor(gridViewGallery, R.color.custom_toolbar_c));
+                    gridViewGallery.toolbar.setTitleTextColor(ContextCompat.getColor(gridViewGallery,R.color.custom_toolbar_c));
+                    // 메뉴 버튼 변경
+                    Menu menu=gridViewGallery.toolbar.getMenu();
+                    menu.removeGroup(R.id.grid_toolbar_menu);
+//                menu.add(R.id.bigimg_click_menu, R.id.rotate, 0, "");
+//                gridViewGallery.toolbar.inflateMenu(R.menu.fg_bigimg_clicked_menu);
+                    gridViewGallery.zoomOut=0;
+                    Log.e("show_position : _ ", "bundle"+position);
+                }// onclick_imageview
+            });
+        }
+
+
     }// onbindviewholder...
 
 
@@ -230,10 +321,10 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
     @Override
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {// 리사이클러 재활용
-        VH vh= (VH) holder;
+//        VH vh= (VH) holder;
 //        Log.e("startViewNum : ", "onViewRecycled");
-        File[] lists=direct.listFiles();
-        Collections.reverse(Arrays.asList(lists));
+//        File[] lists=direct.listFiles();
+//        Collections.reverse(Arrays.asList(lists));
 //        Log.e("view_recycled_test", holder.getAdapterPosition()+"번째 재활용");
 //        if (clickListStr.contains(lists[holder.getAdapterPosition()].getName())){
 //            Glide.with(context).load(R.drawable.ic_check_circle_w_24).into(vh.check);

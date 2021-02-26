@@ -2,6 +2,7 @@ package com.example.cameratest01;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -16,11 +17,14 @@ public class RotateTransformation extends BitmapTransformation {
 
     public RotateTransformation(float rotateRotationAngle) {
         this.rotateRotationAngle = rotateRotationAngle;
+        Log.e("ImgFGpager_Test : "," rotateRotationAngle : "+rotateRotationAngle);
     }
 
     @Override
     protected Bitmap transform(@NonNull BitmapPool pool, @NonNull Bitmap toTransform, int outWidth, int outHeight) {
 
+
+        Log.e("ImgFGpager_Test : "," transform : "+rotateRotationAngle);
         Matrix matrix=new Matrix();
         matrix.postRotate(rotateRotationAngle);
 

@@ -13,6 +13,7 @@ import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.RecoverableSecurityException;
@@ -29,11 +30,15 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
+import android.os.Handler;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -54,11 +59,9 @@ import com.example.cameratest01.RC_Items.ImageFolder;
 import com.example.cameratest01.customViewPager.StopPagingViewPager;
 import com.example.cameratest01.gallery_clicked.Clicked_BigImage_FG;
 import com.example.cameratest01.gallery_clicked.ImagePageFragment;
-import com.example.cameratest01.gridview_adapter.Android_Adapter;
-import com.example.cameratest01.gridview_adapter.Date_Adapter;
 import com.example.cameratest01.gridview_adapter.New_Adapter;
 import com.example.cameratest01.gridview_gallery_fragment.Android_images_FG;
-import com.example.cameratest01.gridview_gallery_fragment.Date_images_FG;
+//import com.example.cameratest01.gridview_gallery_fragment.Date_images_FG;
 import com.example.cameratest01.gridview_gallery_fragment.New_images_FG;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -69,119 +72,139 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Permission;
 import java.security.Permissions;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 import okhttp3.internal.Util;
 
+// todo 툴바 색상 변경, ImageData클래스명 변경, 이미지 저장시에 기존경로 추가로 데이터 저장하기, SCALABLELAYOUT사용해서 layout구성하기,
+//  같은 이미지 회전하여 저장할때 다른이름으로 저장되게 하기, 이미지 로드할때 스레드 완료되지 않으면 기본갤러리 클릭되지 않게 하기..
+//  이미지 리스트 터치하면 큰화면 보이게 UI변경 상단 네비버튼 [전송]버튼 [선택]으로 변경 하여 선택 클릭시 이미지 선택가능한 화면 나오게 하기..
+//  키즈사랑 카메라로 사진찍고 저장할때 회전 값 다시 설정하기 수직으로 촬영한부분이 0으로 들어가야 정상적으로 출력됨...
+//  회전값 가져오는 부분을 확인해보니 이미지가 저장될때 디바이스 회전값을 저장하여 그것을 가져오는 것같음....
+
 public class GridViewGallery extends AppCompatActivity {
 
+    //  layout, fragment
     public Toolbar toolbar;
     public ActionBar actionBar;
-    ArrayList<String> strArr;
-    public Fragment[] fragments=new Fragment[3];
-    FragmentManager manager;
-    public BottomNavigationView bnv;
-//    public ViewPager viewPager;// todo 화면 전환 중지를 위해서 커스텀 뷰페이저로 바꿔보기.
-    public StopPagingViewPager viewPager;
-    public int pagePosition;
-
-    New_Adapter new_adapter;
-    Android_Adapter android_adapter;
-    Date_Adapter date_adapter;
-    public ConstraintLayout constraintLayout;
-
-    public File direct;
-
-    File[] lists;
     public LinearLayout bottomNav;
     public ImageView checkImgView;
-
-    int checkedNum=0;
-    public int rotClickedNum=0;
-    public boolean returnVal=false;
+    public BottomNavigationView bnv;
+    public StopPagingViewPager viewPager;
+    public ConstraintLayout constraintLayout;
     public ImageView lockImg;
-    public int degree=0;
-    boolean rotSaveOut=false;
-    int outNum=0;
-    public int zoomOut=0;
-    public int topNavClickNum=0;
+    public Fragment[] fragments=new Fragment[3];
+    FragmentManager manager;
+    New_Adapter new_adapter;
 
-    public ArrayList<Float> flatRotate=new ArrayList<>();
-    public ArrayList<Float> flatRotateKide=new ArrayList<>();
+    // fileData
+    public File direct;     // 키즈사랑 갤러리 경로
+    File[] lists;           // 키즈사랑 갤러리에 보여질 파일 리스트
+    ArrayList<ImageData> imageData=new ArrayList<>();// 키즈사랑 갤러리 데이터
+    public ArrayList<ImageData> AC_imageData=new ArrayList<>();// 기본갤러리 데이터
+    public ArrayList<String> imagesArr =new ArrayList<>();// 기본갤러리 이미지 경로 및 데이터
 
-    ArrayList<ImageData> imageData=new ArrayList<>();
-    public ArrayList<ImageData> AC_imageData=new ArrayList<>();
+    // values
+    public int pagePosition;    // 큰 이미지의 포지션
+    public int checkedNum=0;    // 삭제할 사진이 있는지 확인
+    public int rotClickedNum=0; // 회전버튼 클릭 횟수
+    public int outNum=0;        // 큰 이미지뷰 나올때 구분 0 : 이미지정보 수정되지 않았을때, 1 : 삭제, 저장, 되돌리기 등의 작업 완료 시,
+    public int zoomOut=0;// 0 : 그냥 나옴, 1 : 삭제, 2: 회전버튼클릭
+    public int imageloading=0;  // 0: 이미지 로드되지 않은 상태, 1 : 이미지 로드된 상태
+    public boolean returnVal=false;
+    public boolean rotSaveOut=false;
+    public static String GALLERY_TYPE="K";// K : 키즈사랑 갤러리, D : 기본갤러리
+    public String SELECT_IMAGES="C";// C : 선택으로 택스트 보여질때, S : 전송으로 택스트 보여질때
 
-    public ArrayList<String> images=new ArrayList<>();
 
-    public int clickZoomAndroid=0;
-    public int switchNum;
-//    public ArrayList<Float> floats=new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setData();// 이미지 데이터 set
+        //getDatta();
+        setFragments();// fragment배치
+        setLayout();// 레이아웃 배치
+        setEvent();
 
-        direct=new File(getFilesDir(), "CameraTest01"+File.separator+"kidsLove");// 키즈사랑 갤러리 이미지 받아오는곳
+    }// onCreate...
 
-//        Log.e("direct File : ", getFilesDir().getName());
-//        Log.e("direct File : ", getFilesDir().toString());
+    private void setEvent() {
+        bnv.setOnNavigationItemSelectedListener(navItemSelected);
+        toolbar.setOnMenuItemClickListener(menuItemClickListener);
+
+    }
+
+
+
+    private void setData() {
+        direct=new File(getFilesDir(), "CameraTest01"+File.separator+"kidsLove");  // 키즈사랑 갤러리 이미지 받아오는곳
+
+        Log.e("showDirect", Uri.fromFile(direct).getPath());   // file:///data/user/0/com.example.cameratest01/files/CameraTest01/kidsLove
+
         if (!direct.exists()) {
-            if (!direct.mkdirs()) {
-                Log.d("TAG", "failed to create directory");
-            }
+            direct.mkdirs();
         }
-//        imageFolders=getImageFolders();
+        lists=direct.listFiles();
+        Collections.reverse(Arrays.asList(lists));  // 파일 내부에 있는 데이터 역순으로 돌림
+
+
+//        Log.e("showUris", " - "+getUriArr());
+
+        for (int i = 0; i < lists.length; i++) {    // 키즈사랑 갤러리
+            imageData.add(new ImageData(lists[i].getName(),lists[i].getPath(),0,0,getOrientateionOfImage(lists[i].getAbsolutePath()), getOrientateionOfImage(lists[i].getAbsolutePath()), "K") );
+            try {
+                Log.e("showImageOri", "imageDataOri - "+getOrientationOfKidsLoveImage(lists[i].getCanonicalPath()));// 테그에서 받아온 값을 정수로 변환하지 않음...
+                Log.e("showImageOri", "imageDataOri - "+getOrientateionOfImage(lists[i].getAbsolutePath()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.e("showImageOri", "imageDataOri - "+lists[i].getAbsoluteFile().toString());
+//            imageData.get(i).setImageType(KIDS_LOVE_TYPE);
+        }
+//        ArrayList<Integer> integers=new ArrayList<>();
+//        integers=getKidsLoveImageOri();
+//        for (int i = 0; i < integers.size(); i++) {
+//            Log.e("getImageOri", " : "+integers.get(i));
+//        }
         try {
-            images=getAllShownImagesPath();// 기본갤러리 이미지 받아오는 곳 todo 9버전 사진 못받아옴..
+            imagesArr=getAllShownImagesPath();// 기본갤러리 이미지 받아오는 곳 9버전 사진 못받아옴..
         }catch (Exception e){
             e.printStackTrace();
         }
-        lists=direct.listFiles();
-        Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
-        for (int i = 0; i < lists.length; i++) {
-            imageData.add(new ImageData(lists[i].getName(),lists[i].getPath(),0,0));
-        }
-        // sharedPreferences
+        // 스레드사용해보기
+        ImageLoadThread loadThread=new ImageLoadThread();
+        Thread thread=new Thread(loadThread);
+        thread.start();
+        Log.e("getState", "- state"+thread.getState());
 
+        // 스레드 작업이 끝나기 전에 기본 갤러리로 이동하면 보여주는 리스트 회전 값 이상하게 나옴
+//        for (int i = 0; i < imagesArr.size(); i++) {
+//            AC_imageData.get(i).setRotateNum(getOrientateionOfImage(imagesArr.get(i)));
+//            AC_imageData.get(i).setOrirotateNum(getOrientateionOfImage(imagesArr.get(i)));
+////            AC_imageData.get(i).setImageType(DEFAULT_TYPE);
+//        }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flatRotate=getAC_SharedPreferences();
-            flatRotateKide=getSharedPreferences();
-//            flatRotate=getSharedPreferences();
+    }// setData....
 
-            if (flatRotate.size()==0){// 기본갤러리의 회전값 없을때...
-                setAC_Preference();
-                flatRotate=getAC_SharedPreferences();
-            }else if (flatRotate.size()!=images.size() && flatRotate.size()!=0){// 기본갤러리
-                setAC_Preference();
-                flatRotate=getAC_SharedPreferences();
-            }
-            if (flatRotateKide.size()!=imageData.size() && flatRotateKide.size()!=0){
-                Log.e("sharedPref_re", flatRotateKide.size()+" : "+imageData.get(imageData.size()-1).ImageName);
-                setPreference();
-                flatRotateKide=getSharedPreferences();
-            }else if (flatRotateKide.size()==0){
-                setPreference();
-                flatRotateKide=getSharedPreferences();
-            }
-            Log.e("sharedTest : ", flatRotate.toString());
-//            for (int i = 0; i < imageData.size(); i++) {
-//                imageData.get(i).rotateNum=flatRotate.get(i);
-//            }
-//            switchNum=(int)flatRotateKide.get(pagePosition).floatValue();
-
-        }
-
+    private void setLayout() {// layout 설정
+        new_adapter=new New_Adapter(GridViewGallery.this, imageData);// 처음 실행은 키즈사랑 갤러리로 실행
+        new_adapter.setType(GALLERY_TYPE);
+        manager=getSupportFragmentManager();
+        FragmentTransaction transaction=manager.beginTransaction();
+        transaction.add(R.id.pager_gridview, fragments[0]);
+        transaction.commit();// 키즈사랑 갤러리 처음화면으로 지정
 
         constraintLayout=findViewById(R.id.setPageVisivility);
         setContentView(R.layout.activity_grid_view_gallery);
@@ -193,28 +216,13 @@ public class GridViewGallery extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle("키즈사랑앨범");
 
-        Bundle bundle=getIntent().getExtras();
-        strArr=bundle.getStringArrayList("fileName");
-        Log.e("SizeTest : ", strArr.size()+"" );
-        setFragments();// fragment배치
-        new_adapter=new New_Adapter(GridViewGallery.this, imageData);
-        android_adapter=new Android_Adapter(GridViewGallery.this,imageData, images);
-        date_adapter=new Date_Adapter(GridViewGallery.this, imageData);
-        manager=getSupportFragmentManager();
-        FragmentTransaction transaction=manager.beginTransaction();
-        transaction.add(R.id.pager_gridview, fragments[0]);
-        transaction.commit();// 최근 페이지 처음화면으로 지정
         lockImg=findViewById(R.id.lockImage);
         checkImgView=findViewById(R.id.image_check_icon);
         viewPager=findViewById(R.id.viewpager_grid);
         viewPager.setPagingEnabled(true);
         bottomNav=findViewById(R.id.bottomLay_visivle);
         bnv=findViewById(R.id.navBar);
-        bnv.setOnNavigationItemSelectedListener(navItemSelected);
-        toolbar.setOnMenuItemClickListener(menuItemClickListener);
-
-
-    }// onCreate...
+    }
 
 
 
@@ -230,12 +238,19 @@ public class GridViewGallery extends AppCompatActivity {
 
         if (zoomOut==0 && outNum==0){// 그냥 나올때
             returnVal=false;
-            degree=0;
+            // 기본갤러리에서 저장 후 키즈사랑앨범에서 확인하고 뒤로가기 버튼 클릭시 에러 기본갤러리에서 바로 나가는것은 상관없음
+            if (GALLERY_TYPE.equals("K")){
+                imageData.get(pagePosition).setRotateNum(imageData.get(pagePosition).getOrirotateNum());
+                Log.e("pagePositionShow", " - K"+pagePosition);
+            }else {
+                AC_imageData.get(pagePosition).setRotateNum(AC_imageData.get(pagePosition).getOrirotateNum());
+                Log.e("pagePositionShow", " - D"+pagePosition);
+            }
             outNum=0;
             zoomOut=0;
             rotSaveOut=false;
             rotClickedNum=0;
-            clickZoomAndroid=0;
+//            clickZoomAndroid=0;
             super.onBackPressed();
             finishBigImage();//종료
             // 종료 후 리스트 재실행
@@ -246,12 +261,17 @@ public class GridViewGallery extends AppCompatActivity {
             Log.e("fragmentShow", " - backPressed outNum=0");// 이거까지 나오고 에러남.
         }else if (outNum==1){// 수정하고 나올때
             returnVal=false;
-            degree=0;
+            if (GALLERY_TYPE.equals("K")){
+//                imageData.get(pagePosition).setRotateNum(imageData.get(pagePosition).getOrirotateNum());
+                imageData.get(pagePosition).setOrirotateNum(imageData.get(pagePosition).getRotateNum());
+            }else {
+                AC_imageData.get(pagePosition).setOrirotateNum(AC_imageData.get(pagePosition).getRotateNum());
+            }
             outNum=0;
             zoomOut=0;
             rotClickedNum=0;
             rotSaveOut=false;
-            clickZoomAndroid=0;
+//            clickZoomAndroid=0;
             GridViewGallery.super.onBackPressed();
             finishBigImage();
 //            FragmentTransaction tran=manager.beginTransaction();
@@ -264,14 +284,17 @@ public class GridViewGallery extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     returnVal=false;
-                    degree=0;
+                    if (GALLERY_TYPE.equals("K")){
+                        imageData.get(pagePosition).setRotateNum(imageData.get(pagePosition).getOrirotateNum());
+                    }else {
+                        AC_imageData.get(pagePosition).setRotateNum(AC_imageData.get(pagePosition).getOrirotateNum());
+                    }
                     outNum=0;
                     zoomOut=0;
                     rotClickedNum=0;
                     rotSaveOut=false;
-                    clickZoomAndroid=0;
-                    switchNum=(int)flatRotateKide.get(pagePosition).floatValue();
-                    Log.e("switchNumSetOut", flatRotateKide.get(pagePosition).floatValue()+"");
+//                    clickZoomAndroid=0;
+//                    switchNum=(int)flatRotateKide.get(pagePosition).floatValue();
                     GridViewGallery.super.onBackPressed();
                     finishBigImage();
 //                    FragmentTransaction tran=manager.beginTransaction();
@@ -292,7 +315,6 @@ public class GridViewGallery extends AppCompatActivity {
         switch (item.getItemId()){
             case android.R.id.home: {
                 onBackPressed();// 백버튼과 동일한 동작 수행하도록 설정하니까 에러 없어짐...
-                degree=0;
             }break;
         }
         return super.onOptionsItemSelected(item);
@@ -304,9 +326,24 @@ public class GridViewGallery extends AppCompatActivity {
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()){
 // =================== 갤러리 메뉴====================
-                case R.id.send:// 선택한 사진 전송
-                    Toast.makeText(GridViewGallery.this, "전송", Toast.LENGTH_SHORT).show();
-                    // todo 전송기능
+                case R.id.send:// 사진 리스트 선택으로 UI전환 하기
+                    if (SELECT_IMAGES.equals("C")){// 선택일때
+                        item.setTitle("전송");// 선택 누르면 전송으로 변경 구분값 추가해야함.
+                        SELECT_IMAGES="S";
+                        new_adapter.setSelectType(SELECT_IMAGES);
+                        Log.e("SELECT_IMAGES", " : "+SELECT_IMAGES);
+                        bindAdapter();
+
+                    }else if (SELECT_IMAGES.equals("S")){// 전송일때
+                        item.setTitle("선택");
+                        SELECT_IMAGES="C";
+                        new_adapter.setSelectType(SELECT_IMAGES);
+                        Log.e("SELECT_IMAGES", " : "+SELECT_IMAGES);
+                        //findViewById(R.id.delete);
+                        bindAdapter();
+                    }
+
+
                     break;
                 case R.id.delete:// 선택한 사진 삭제
                     try {
@@ -330,115 +367,85 @@ public class GridViewGallery extends AppCompatActivity {
                     }
                     break;
 // =================== 큰사진 메뉴====================  하단으로 위치변경 및 텍스트 표시
-                case R.id.rotate:// 저  장 // todo 기본갤러리에서 저장할때 키즈사랑 카메라에서 촬영한 사진들 만큼의 길이에 있는 이미지만 저장됨...pagePosition확인해보기...
+                case R.id.rotate:// 저  장
                     // 회전시킨 이미지 정보 저장
                     dialogSet("변경된 정보를 저장하시겠습니까?", "저 장", "저 장", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             outNum=1;
                             zoomOut=0;
-
                             File file = null;
-                            ArrayList<Float> floats=new ArrayList<>();
-                            if (clickZoomAndroid==0){
-                                imageData.get(pagePosition).rotateNum=degree;
+                            Collections.reverse(AC_imageData);
+                            float rotateNumSet=0f;
+//                            ArrayList<Float> floats=new ArrayList<>();
+                            if (GALLERY_TYPE.equals("K")){// 키즈사랑 갤러리 파일
+                                setOrientateionOfKidsLoveImage(imageData.get(pagePosition).ImagePath, imageData.get(pagePosition).rotNum);// 이미지에 회전값 테그 set하는방법.
+                                rotateNumSet=imageData.get(pagePosition).getOrirotateNum();// 실제이미지는 한칸씩회전되어 저장됨 하지만 앱에서 보여지는 회전값이 오락가락함...
+                                imageData.get(pagePosition).setOrirotateNum(imageData.get(pagePosition).getRotateNum());
+                                imageData.get(pagePosition).setRotateNum(rotateNumSet);
+
                                 new_adapter.setItem(imageData);
+
+
+                                new_adapter.setType(GALLERY_TYPE);
                                 file=new File(direct, imageData.get(pagePosition).ImageName);// 키즈사랑 갤러리에서 회전시켰을때 저장경로.
-                            }else if (clickZoomAndroid==1){
-                                AC_imageData.get(pagePosition).rotateNum=degree;
-                                android_adapter.setItem(images,AC_imageData);
+
+                            }else if (GALLERY_TYPE.equals("D")){// 기본 갤러리 파일
+                                rotateNumSet=AC_imageData.get(pagePosition).getOrirotateNum();//
+                                AC_imageData.get(pagePosition).setOrirotateNum(AC_imageData.get(pagePosition).getRotateNum());
+                                AC_imageData.get(pagePosition).setRotateNum(rotateNumSet);
+                                new_adapter.setItem(imagesArr,AC_imageData);
+                                new_adapter.setType(GALLERY_TYPE);
 //                                file은 사진 가져오는 경로
-//                                Log.e("image_path", images.get(pagePosition));
-                                file=new File(images.get(pagePosition));
+//                                Log.e("image_path", imagesArr.get(pagePosition));
+                                file=new File(imagesArr.get(pagePosition));// 기본갤러리 파일
                             }
 
 
-                            // 이미지 회전되서 저장된거 확인함 회전된 이미지 보여주지 않음 => Glide에서 이미지 회전 고정시켜서 보여줌.
-                            degree=0;
-                            // get, set
-//                            setPreference();
-//                            editRot(imageData);
-
-                            if (clickZoomAndroid==0){// 키즈사랑갤러리에서 회전값 저장할때
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//                                    floats=getSharedPreferences();
-                                    floats=getSharedPreferences();// 여기서 이미지 회전값 저장하고 받아와야함.
-                                    Log.e("floatsTest", " 0 = "+floats.toString());
-                                    if (!floats.get(pagePosition).equals(imageData.get(pagePosition).rotateNum)){
-                                        floats.set(pagePosition, imageData.get(pagePosition).rotateNum);// 쉐어드에 저장하기..
-                                        SharedPreferences pref=getSharedPreferences("ImageData", MODE_PRIVATE);
-
-                                        SharedPreferences.Editor editor=pref.edit();
-
-                                        JSONArray jsonArray=new JSONArray();
-
-                                        for (int i = 0; i < imageData.size(); i++) {
-                                            jsonArray.put(floats.get(i));
-                                        }
-                                        if (!floats.isEmpty()) {
-                                            editor.putString("rotData", jsonArray.toString());
-                                        }else {
-                                            editor.putString("rotData", null);
-                                        }
-                                        editor.apply();
-                                        Toast.makeText(GridViewGallery.this, "", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-//                                matrix.postRotate(imageData.get(pagePosition).rotateNum);// 인덱스 에러 회전값 저장//
-
-                            }else if (clickZoomAndroid==1){// 기본 갤러리에서 회전값 저장하여 키즈사랑 갤러리로 보낼때.
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//                                    floats=getSharedPreferences();
-//                                    floats=getAC_SharedPreferences();// 다시 확인해보기
-                                    floats=flatRotateKide;
-
-                                    Log.e("floatsTest", " 1 = "+floats.toString());
-
-                                    if (!imageData.contains(AC_imageData.get(pagePosition).ImageName)){
-                                        floats.add(AC_imageData.get(pagePosition).rotateNum);// 쉐어드에 저장하기.. 값이 0으로 저장됨...
-                                        SharedPreferences pref=getSharedPreferences("ImageData", MODE_PRIVATE);
-
-                                        SharedPreferences.Editor editor=pref.edit();
-
-                                        JSONArray jsonArray=new JSONArray();
-
-                                        for (int i = 0; i < imageData.size(); i++) {
-                                            jsonArray.put(floats.get(i));
-                                        }
-
-                                        if (!floats.isEmpty()) {
-                                            editor.putString("rotData", jsonArray.toString());// 리스트 다시작성함
-                                        }else {
-                                            editor.putString("rotData", null);
-                                        }
-                                        editor.apply();
-                                        Toast.makeText(GridViewGallery.this, AC_imageData.get(pagePosition).rotateNum+"", Toast.LENGTH_SHORT).show();
-                                    }
-
-                                }
-//                                matrix.postRotate(AC_imageData.get(pagePosition).rotateNum);// 인덱스 에러 회전값 저장//
-                            }// clickZoomAndroid == 1
-
                             Bitmap bm=BitmapFactory.decodeFile(file.getAbsolutePath());
+                            RectF viewRect=new RectF(0,0,bm.getWidth(), bm.getHeight());
+//                            float centerX=viewRect.centerX();
+//                            float centerY=viewRect.centerY(); , centerX, centerY
                             Matrix matrix=new Matrix();
-                            matrix.postRotate(AC_imageData.get(pagePosition).rotateNum);// 인덱스 에러 회전값 저장//
+                            if (GALLERY_TYPE.equals("K")){// 키즈사랑 갤러리 회전값
+//                                matrix.postRotate(imageData.get(pagePosition).rotateNum);
+                                if (matrix.postRotate(imageData.get(pagePosition).getRotateNum())){
+//                                    matrix.setRotate(imageData.get(pagePosition).getRotateNum());
+                                }else {
+                                    matrix.setRotate(imageData.get(pagePosition).getRotateNum());
+                                }
+                            }else {// 기본갤러리 회전값
+//                                matrix.postRotate(AC_imageData.get(pagePosition).rotateNum);// 인덱스 에러 회전값 저장//
+                                if (matrix.postRotate(AC_imageData.get(pagePosition).getRotateNum())){
+//                                    Toast.makeText(GridViewGallery.this, ""+AC_imageData.get(pagePosition).getRotateNum(), Toast.LENGTH_SHORT).show();
+                                }else {
+                                    matrix.setRotate(AC_imageData.get(pagePosition).getRotateNum());
+                                }
+                            }
 //                            matrix.postRotate(floats.get(pagePosition));// 인덱스 에러 회전값 저장//
+                            try {
+                                Log.e("matrixShow", " - width : "+bm.getWidth());
+                                bm=Bitmap.createBitmap(bm, 0,0,bm.getWidth(),bm.getHeight(),matrix,true);
+                            }catch (NullPointerException e){
+                                e.printStackTrace();
+                            }
 
-
-                            bm=Bitmap.createBitmap(bm, 0,0,bm.getWidth(),bm.getHeight(),matrix,true);
-//                            Log.e("degreeNum : ", " - "+floats.get(pagePosition));// 저장될때 shared에 저장하기
 //                            file.delete();
 //                            imageData.remove(pagePosition);
+
+
+
                             FileOutputStream fOut=null;
                             try {
-                                if (clickZoomAndroid==0){
+                                if (GALLERY_TYPE.equals("K")){// 키즈사랑 갤러리에서 저장 누를시 저장 경로
                                     fOut=new FileOutputStream(file);
                                     bm.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
                                     fOut.flush();//덮어씌우기
                                     fOut.close();
 //                                    switchNum=getOrientateionOfImage(imageData.get(pagePosition).ImagePath);
-                                }else if (clickZoomAndroid==1){
-                                    File file2=new File(direct, AC_imageData.get(pagePosition).ImageName);
+                                }else if (GALLERY_TYPE.equals("D")){// 기본 갤러리에서 저장 누를시 저장경로
+//                                    File file2=new File(direct, AC_imageData.get(pagePosition).ImageName);
+                                    File file2=new File(direct, "cp_"+new SimpleDateFormat("yyyy_MM_dd_HHmmss").format(new Date())+".jpg");
                                     fOut=new FileOutputStream(file2);
                                     bm.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
 
@@ -448,38 +455,38 @@ public class GridViewGallery extends AppCompatActivity {
 
                                     fOut.write(bytes);//새로쓰기
                                     fOut.close();
-                                    Collections.reverse(imageData);
+
+                                    Collections.reverse(imageData);// 저장하는 데이터 뒤집기
                                     imageData.add(new ImageData(
                                             AC_imageData.get(pagePosition).ImageName,
-                                            AC_imageData.get(pagePosition).ImagePath,
-                                            0, 0
+//                                            AC_imageData.get(pagePosition).ImagePath,
+                                                    imagesArr.get(pagePosition),
+                                            0, 0, 0, AC_imageData.get(pagePosition).getRotateNum(),
+                                            "K"
                                     ));
-                                    Collections.reverse(imageData);
-                                    new_adapter.setItem(imageData);
-                                    new_adapter.notifyDataSetChanged();// newimage를 다시 실행해야할듯
-//                                    switchNum=getOrientateionOfImage(AC_imageData.get(pagePosition).ImagePath);
+
+                                    Collections.reverse(imageData);// 저장완료 후 다시 뒤집기
+                                    new_adapter.setItem(imageData);// 기본갤러리에서 받아온 사진을 키즈사랑 갤러리에 저장하기때문에 키즈사랑 갤러리 데이터만 갱신함
+                                    new_adapter.setType(GALLERY_TYPE);
+//                                    new_adapter.notifyDataSetChanged();// newimage를 다시 실행해야할듯
                                 }
-//                                fOut.write(bytes);
-//                                stream.write(bytes);
-//                                stream.close();
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            Collections.reverse(AC_imageData);
 
                             FragmentTransaction tran = manager.beginTransaction();
                             tran.remove(fragments[0]);
                             fragments[0]=new New_images_FG(imageData);
+                            new_adapter.notifyDataSetChanged();// newimage를 다시 실행해야할듯
                             tran.replace(R.id.pager_gridview, fragments[0]);
                             tran.commit();// new fragment다시실행
                             // 저장 메소드 추가
-//                            switchNum=(int)floats.get(pagePosition).floatValue();
-//                            Log.e("flatRotateKideShow", " in saved = "+switchNum+" / "+floats.get(pagePosition));
                             bigImageToolbarItem_clear();// 회전버튼 눌렀을때 나오는 아이콘 안보이게 변경
                             commitClickFG();// 큰이미지 다시 보여주기
                             // 저장하고 다시 회전시켜서 저장하면 바뀐 데이터로 저장되지 않음...
-
                         }
                     });
                     break;
@@ -492,7 +499,12 @@ public class GridViewGallery extends AppCompatActivity {
                             commitClickFG();
                             outNum=1;
                             zoomOut=0;
-                            degree=0;
+                            rotClickedNum=1;//
+                            if (GALLERY_TYPE.equals("K")){
+                                imageData.get(pagePosition).setRotateNum(imageData.get(pagePosition).getOrirotateNum());
+                            }else {
+                                AC_imageData.get(pagePosition).setRotateNum(AC_imageData.get(pagePosition).getOrirotateNum());
+                            }//}else if (rotSaveOut && outNum!=1 || rotClickedNum==1){
                         }
                     });
                     break;
@@ -515,72 +527,63 @@ public class GridViewGallery extends AppCompatActivity {
         }
         Bundle bundle=new Bundle();
 
-        if (clickZoomAndroid==0){// 키즈사랑 갤러리에서 회전버튼클릭
+
+        if (GALLERY_TYPE.equals("K")){
             if (returnVal==false){
                 returnVal=true;
             }
 
-            if (flatRotateKide.size()>0){
-//                Log.e("flatRotateKideShow", " = "+flatRotateKide.get(pagePosition));
-//                if (flatRotateKide.get(pagePosition) == 90) {
-//                    degree = 180;
-//                    imageData.get(pagePosition).rotateNum = 180;
-//                } else if (flatRotateKide.get(pagePosition) == 180) {
-//                    degree = 270;
-//                    imageData.get(pagePosition).rotateNum = 270;
-//                } else if (flatRotateKide.get(pagePosition) == 270) {
-//                    degree = 0;
-//                    imageData.get(pagePosition).rotateNum = 0;
-//                } else if (flatRotateKide.get(pagePosition) == 0) {
-//                    degree = 90;
-//                    imageData.get(pagePosition).rotateNum = 90;
-//                }
-
-
-                Log.e("flatRotateKideShow", " rot in 1= "+switchNum);
-                switch (switchNum){
-                    case 90:degree+=90; imageData.get(pagePosition).rotateNum=180; switchNum=180;break;
-                    case 180:degree+=90; imageData.get(pagePosition).rotateNum=270; switchNum=270;break;
-                    case 270:degree=0; imageData.get(pagePosition).rotateNum=0; switchNum=0;break;
-                    case 0:degree+=90; imageData.get(pagePosition).rotateNum=90;switchNum=90;break;
-                }
-                Log.e("flatRotateKideShow", " rot in 2= "+switchNum);
-            }else {
-                switch ((int) imageData.get(pagePosition).rotateNum){
-                    case 90:degree=180; imageData.get(pagePosition).rotateNum=180;break;
-                    case 180:degree=270; imageData.get(pagePosition).rotateNum=270;break;
-                    case 270:degree=0; imageData.get(pagePosition).rotateNum=0;break;
-                    case 0:degree=90; imageData.get(pagePosition).rotateNum=90;break;
-                }
+            switch ((int) imageData.get(pagePosition).getRotateNum()){
+                case 90:
+                    imageData.get(pagePosition).setRotateNum(180f);
+                    Log.e("kidsLoveRotPath", imageData.get(pagePosition).ImagePath);
+                    break;
+                case 180:
+                    imageData.get(pagePosition).setRotateNum(270f);
+                    Log.e("kidsLoveRotPath", imageData.get(pagePosition).ImagePath);
+                    break;
+                case 270:
+                    imageData.get(pagePosition).setRotateNum(0f);
+                    Log.e("kidsLoveRotPath", imageData.get(pagePosition).ImagePath);
+                    break;
+                case 0:
+                    imageData.get(pagePosition).setRotateNum(90f);
+                    Log.e("kidsLoveRotPath", imageData.get(pagePosition).ImagePath);
+                    break;
             }
+            // 회전할때마다 저장되는 이미지 경로값이 같음..
 
-            Log.e("degreeNum : "," degree - "+degree);
-            Log.e("degreeNum : "," rotateNum - "+imageData.get(pagePosition).rotateNum);
+            Log.e("ImgFGpager_Test : "," iD_G : "+imageData.get(pagePosition).getRotateNum());
             // 회전시킨 이미지 저장
             // 메뉴 버튼 변경
 
             bundle.putInt("position", pagePosition);
             bundle.putParcelableArrayList("imageData", imageData);
-            bundle.putInt("degree", switchNum);
+            bundle.putInt("degree", (int) imageData.get(pagePosition).getRotateNum());
 
         }else {// 기본갤러리에서 회전버튼 클릭
             if (returnVal==false){
                 returnVal=true;
-                Collections.reverse(AC_imageData);
+                if (rotClickedNum==1){// 처음 회전버튼 눌렀을때만 데이터 반전
+                    Collections.reverse(AC_imageData);  //  회전시킬때 데이터 회전시킴..
+                }
             }
 
-            switch ((int) AC_imageData.get(pagePosition).rotateNum){
-                case 90:degree=180; AC_imageData.get(pagePosition).rotateNum=180;break;
-                case 180:degree=270; AC_imageData.get(pagePosition).rotateNum=270;break;
-                case 270:degree=0; AC_imageData.get(pagePosition).rotateNum=0;break;
-                case 0:degree=90; AC_imageData.get(pagePosition).rotateNum=90;break;
+            switch ((int) AC_imageData.get(pagePosition).getRotateNum()){
+                case 90:AC_imageData.get(pagePosition).setRotateNum(180f);break;
+                case 180:AC_imageData.get(pagePosition).setRotateNum(270f);break;
+                case 270:AC_imageData.get(pagePosition).setRotateNum(0f);break;
+                case 0:AC_imageData.get(pagePosition).setRotateNum(90f);break;
             }
 
             bundle.putInt("position", pagePosition);
             bundle.putParcelableArrayList("AC_imageData", AC_imageData);
-            bundle.putInt("degree", degree);
-            bundle.putStringArrayList("images", images);
+            bundle.putInt("degree", (int) AC_imageData.get(pagePosition).getRotateNum());
+            Log.e("ImgFGpager_Test", ", AC_G : "+AC_imageData.get(pagePosition).getRotateNum());
+            bundle.putStringArrayList("images", imagesArr);
         }
+
+
         Fragment fragment=new ImagePageFragment();
         fragment.setArguments(bundle);
         FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
@@ -598,22 +601,27 @@ public class GridViewGallery extends AppCompatActivity {
         builder.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                returnVal=false;
-                outNum=1;
-                zoomOut=1;
-                if (clickZoomAndroid==0){
+//                returnVal=false;
+//                outNum=1;
+//                zoomOut=1;
+                if (GALLERY_TYPE.equals("K")){
                     new_adapter.imgDelete(pagePosition);
                     imageData.remove(pagePosition);
-                    lists[pagePosition].delete();
+                    if (lists.length==pagePosition){
+//                        길이확인
+                    }else {
+                        lists[pagePosition].delete();
+                    }
                     commitClickFG();// 데이터 넘기고 페이저 commit하는 코드
-                } else if (clickZoomAndroid == 1) {// 기본갤러리 사진 지우는 코드
+                } else if (GALLERY_TYPE.equals("D")) {// 기본갤러리 사진 지우는 코드
 //                    Log.e("getAbsolutePath", " - "+file.getAbsolutePath());
-                    Log.e("getAbsolutePath", " - "+images.get(pagePosition));
-                    // 기본갤러리에서 사진삭제
-                    deleteUri();
+                    Log.e("getAbsolutePath", " - "+imagesArr.get(pagePosition));
 
+                    deleteUri();// 기본갤러리에서 사진삭제
+                    Collections.reverse(AC_imageData);// 이부분은 데이터 무조건 뒤집어야함
                 }
                 Snackbar.make(viewPager, "사진이 삭제 되었습니다.", Snackbar.LENGTH_LONG).show();
+                returnVal=false;
             }
         });
         AlertDialog alertDialog=builder.create();
@@ -652,33 +660,68 @@ public class GridViewGallery extends AppCompatActivity {
 //        }
 //    }
 
-    private void bindAdapter(){
+    private void bindAdapter(){// 어뎁터 생성 및 어뎁터의 데이터 갱신
+        Log.e("Click_S",  "GALLERY_TYPE["+GALLERY_TYPE+"], SELECT_IMAGES["+SELECT_IMAGES+"]");
+//        if (GALLERY_TYPE.equals("K")){// 키즈사랑 갤러리
+//            Log.e("Click_S",  "   in K: "+SELECT_IMAGES);
+//            if(new_adapter == null){
+//                Log.e("Click_S", "new_adapter == null");
+//                new_adapter=new New_Adapter(GridViewGallery.this, imageData);// GALLERY_TYPE추가하여 데이터 전송하기.
+//                new_adapter.setType("K");
+//            }else{
+//                Log.e("Click_S", "new_adapter != null, getItemType = [" + new_adapter.getSelectType()+"]");
+//                new_adapter.setItem(imageData);
+//                Log.e("Click_S", "111 getItemType = [" + new_adapter.getSelectType()+"]");
+//                new_adapter.notifyDataSetChanged();// 데이터 변경 알림.
+//                Log.e("Click_S", "222 getItemType = [" + new_adapter.getSelectType()+"]");
+//            }
+//        }else {// D : 기본갤러리 어뎁터 넣는 부분
+////            if (android_adapter==null){
+////                android_adapter=new Android_Adapter(GridViewGallery.this,imageData, imagesArr);
+////            }else {
+////                android_adapter.setItem(imagesArr, imageData);
+////                android_adapter.notifyDataSetChanged();
+////            }
+//            if (new_adapter==null){
+//                new_adapter=new New_Adapter(GridViewGallery.this, AC_imageData, imagesArr);
+//                new_adapter.setType("D");
+//            }else {
+//                new_adapter.setItem(imagesArr ,AC_imageData);
+//                new_adapter.setType("D");
+//                new_adapter.notifyDataSetChanged();
+//            }
+//        }
+
         if(new_adapter == null){
-            new_adapter=new New_Adapter(GridViewGallery.this, imageData);
+            Log.e("Click_S", "new_adapter == null");
+            new_adapter=new New_Adapter(GridViewGallery.this, imageData);// GALLERY_TYPE추가하여 데이터 전송하기.
+            new_adapter.setType("K");
         }else{
+            Log.e("Click_S", "new_adapter != null, getItemType = [" + new_adapter.getSelectType()+"]");
             new_adapter.setItem(imageData);
+            Log.e("Click_S", "111 getItemType = [" + new_adapter.getSelectType()+"]");
             new_adapter.notifyDataSetChanged();// 데이터 변경 알림.
+            Log.e("Click_S", "222 getItemType = [" + new_adapter.getSelectType()+"]");
         }
-        if (android_adapter==null){
-            android_adapter=new Android_Adapter(GridViewGallery.this,imageData, images);
+
+        if (new_adapter==null){
+            new_adapter=new New_Adapter(GridViewGallery.this, AC_imageData, imagesArr);
+            new_adapter.setType("D");
         }else {
-            android_adapter.setItem(images, imageData);
-            android_adapter.notifyDataSetChanged();
+            new_adapter.setItem(imagesArr ,AC_imageData);
+            new_adapter.setType("D");
+            new_adapter.notifyDataSetChanged();
         }
-        if (date_adapter==null){
-            date_adapter=new Date_Adapter(GridViewGallery.this,imageData);
-        }else {
-            date_adapter.notifyDataSetChanged();
-        }
+
     }
 
     private void commitClickFG(){
         Bundle bundle=new Bundle();
         bundle.putInt("position", pagePosition);
         bundle.putParcelableArrayList("imageData", imageData);
-        if (clickZoomAndroid==1){
-            bundle.putStringArrayList("images", images);
-            bundle.putInt("position", pagePosition);// todo nullpoint Error
+        if (GALLERY_TYPE.equals("D")){
+            bundle.putStringArrayList("images", imagesArr);
+            bundle.putInt("position", pagePosition);
             bundle.putParcelableArrayList("AC_imageData", AC_imageData);
         }
         Fragment fragment=new Clicked_BigImage_FG();
@@ -692,7 +735,7 @@ public class GridViewGallery extends AppCompatActivity {
     }
 
     public void clickedImagesD(int checked){//선택한 이미지 삭제
-        if (checked==0){
+        if (checked==0){// 학제할 사진이 없을때.
             AlertDialog.Builder builder=new AlertDialog.Builder(this);
             builder.setMessage("삭제할 사진을 선택해 주세요.");
             builder.setPositiveButton("확인", null);
@@ -715,7 +758,7 @@ public class GridViewGallery extends AppCompatActivity {
                     Log.e("fori_01 : ", "fileList_size... - "+lists1.length+" - start");//
                     for (int i = 0; i < lists1.length; i++) {
                         if (lists1[i].exists()) {
-                            if (imageData.get(i).Check == 1) {
+                            if (imageData.get(i).getCheck() == 1) {
                                 lists1[i].delete();
                             }
                         }
@@ -727,7 +770,15 @@ public class GridViewGallery extends AppCompatActivity {
                     Log.e("fori _0 : ", "end_for");
                     imageData.clear();
                     for (int i = 0; i < lists2.length; i++) {
-                        imageData.add(new ImageData(lists2[i].getName(),lists2[i].getPath(),0,0));
+                        imageData.add(new ImageData(
+                                lists2[i].getName(),
+                                lists2[i].getPath(),
+                                0,
+                                0,
+                                0,
+                                getOrientateionOfImage(lists2[i].getPath()),
+                                "K"
+                        ));
                     }
                     new_adapter.setItem(imageData);
                     bindAdapter();
@@ -740,12 +791,14 @@ public class GridViewGallery extends AppCompatActivity {
         }
     }
 
+
 //    네비게이션바 설정
     BottomNavigationView.OnNavigationItemSelectedListener navItemSelected=new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             FragmentTransaction tran=manager.beginTransaction();
             switch (item.getItemId()){
+
                 case R.id.new_img:
                     actionBar.setTitle("키즈사랑앨범");
                     if (actionBar.getTitle().equals("키즈사랑앨범")){
@@ -757,10 +810,13 @@ public class GridViewGallery extends AppCompatActivity {
                         }
 //                        new_adapter=new New_Adapter(GridViewGallery.this, imageData);
 //                        new_adapter.notifyDataSetChanged();// 데이터 변경 알림.
+//                        new_adapter.setType("K");
+                        GALLERY_TYPE="K";
                         bindAdapter();
                     }
                     tran.replace(R.id.pager_gridview, fragments[0]);
-                    topNavClickNum=0;
+
+                    pagePosition=0;
                     break;
 //                case R.id.date_img:
 //                    actionBar.setTitle("날짜");
@@ -778,20 +834,20 @@ public class GridViewGallery extends AppCompatActivity {
 //                    topNavClickNum=1;
 //                    break;
                 case R.id.android_img:
-
                     actionBar.setTitle("기본갤러리");
-                    if (actionBar.getTitle().equals("기본갤러리")){
-                        for (int i = 0; i < imageData.size(); i++) {
-                            imageData.get(i).Check=0;
-                        }
-                        for (int i = 0; i < AC_imageData.size(); i++) {
-                            AC_imageData.get(i).Check=0;
-                        }
-                        // 데이터 변경 알림 추가하기 - 어뎁터에
-                        bindAdapter();
+                    for (int i = 0; i < imageData.size(); i++) {
+                        imageData.get(i).Check=0;
                     }
+                    for (int i = 0; i < AC_imageData.size(); i++) {
+                        AC_imageData.get(i).Check=0;
+                    }
+                    // 데이터 변경 알림 추가하기 - 어뎁터에
+//                    new_adapter.setType("D");
+                    GALLERY_TYPE="D";
+                    bindAdapter();
+
                     tran.replace(R.id.pager_gridview, fragments[2]);
-                    topNavClickNum=2;
+                    pagePosition=0;
                     break;
             }
             tran.commit();
@@ -802,7 +858,7 @@ public class GridViewGallery extends AppCompatActivity {
     public void click_rotate(View view) {// 이미지 회전
         if (rotClickedNum==0) {
             rotateImage();
-            rotClickedNum=1;
+            rotClickedNum=1;// 회전버튼 1번 누르면 1로 변경
         }else if (returnVal){
             rotateImage();
         }
@@ -814,7 +870,7 @@ public class GridViewGallery extends AppCompatActivity {
 
     public void click_check(View view) {// 이미지 선택
 
-        if (clickZoomAndroid==1){
+        if (GALLERY_TYPE.equals("D")){
             if (AC_imageData.get(pagePosition).Check==0){
                 AC_imageData.get(pagePosition).Check=1;// 이 값이 남아있음.
                 Glide.with(this).load(R.drawable.ic_check_circle_w_24).into(checkImgView);
@@ -841,7 +897,6 @@ public class GridViewGallery extends AppCompatActivity {
         rotClickedNum=0;
         returnVal=false;
         rotSaveOut=true;
-//        clickZoomAndroid=0;
 //        zoomOut=0;
     }
 
@@ -864,8 +919,8 @@ public class GridViewGallery extends AppCompatActivity {
 
     void setFragments(){
         fragments[0]=new New_images_FG(imageData);
-        fragments[1]=new Date_images_FG(imageData);
-        fragments[2]=new Android_images_FG(images, AC_imageData);
+//        fragments[1]=new Date_images_FG(imageData);
+        fragments[2]=new Android_images_FG(imagesArr, AC_imageData);
 //        fragments[2]=new Android_images_FG(testPath.getPath());
     }
 
@@ -877,6 +932,8 @@ public class GridViewGallery extends AppCompatActivity {
             manager.popBackStack();
             toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.kidsLove_color));
             toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+
+            Log.e("backstackcount", " - count : "+manager.getBackStackEntryCount());
 
             Menu menu=toolbar.getMenu();
             menu.removeGroup(R.id.bigimg_click_menu);
@@ -890,180 +947,11 @@ public class GridViewGallery extends AppCompatActivity {
         }
     }
 
-    public void setPreference(){
-        ArrayList<Float> rotData=new ArrayList<Float>();
-        for (int i = 0; i < imageData.size(); i++) {
-            try {
-                ExifInterface exif=new ExifInterface(lists[i].getAbsolutePath());// 이거 사용해서 회전 방법 다시 작성해보기
-                int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-                switch (orientation){
-                    case ExifInterface.ORIENTATION_ROTATE_90:{
-                        imageData.get(i).rotateNum=90;
-                        rotData.add(90f);
-                    }break;
-                    case ExifInterface.ORIENTATION_ROTATE_180:{
-                        imageData.get(i).rotateNum=180;
-                        rotData.add(180f);
-                    }break;
-                    case ExifInterface.ORIENTATION_ROTATE_270:{
-                        imageData.get(i).rotateNum=270;
-                        rotData.add(270f);
-                    }break;
-                    default:{
-                        imageData.get(i).rotateNum=0;
-                        rotData.add(0f);
-                    }break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        SharedPreferences sharedPreferences=getSharedPreferences("ImageData", MODE_PRIVATE);
-        SharedPreferences.Editor editor=sharedPreferences.edit();
-
-        JSONArray jsonArray=new JSONArray();
-
-        for (int i = 0; i < imageData.size(); i++) {
-            jsonArray.put(rotData.get(i));
-        }
-        if (!rotData.isEmpty()) {
-            editor.putString("rotData", jsonArray.toString());
-        }else {
-            editor.putString("rotData", null);
-        }
-        editor.apply();
-    }
-
-    public void setAC_Preference(){// 기본갤러리의 사진 회전값 기기에 저장. => 회전값 받아올 필요없이 모두 0으로 변경.
-        ArrayList<Float> AC_rotData=new ArrayList<Float>();
-        if (AC_imageData!=null){
-            for (int i = 0; i < AC_imageData.size(); i++) {
-                AC_rotData.add(0f);
-//                try {
-//                    ExifInterface exif=new ExifInterface(images.get(i));
-//                    int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-//                    switch (orientation){
-//                        case ExifInterface.ORIENTATION_ROTATE_90:{
-//                            AC_imageData.get(i).rotateNum=90;
-//                            AC_rotData.add(90f);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_180:{
-//                            AC_imageData.get(i).rotateNum=180;
-//                            AC_rotData.add(180f);
-//                        }break;
-//                        case ExifInterface.ORIENTATION_ROTATE_270:{
-//                            AC_imageData.get(i).rotateNum=270;
-//                            AC_rotData.add(270f);
-//                        }break;
-//                        default:{
-//                            AC_imageData.get(i).rotateNum=0;
-//                            AC_rotData.add(0f);
-//                        }break;
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-            }
-        }// if문 끝...
-
-        SharedPreferences sharedPreferences=getSharedPreferences("AC_ImageData", MODE_PRIVATE);
-        SharedPreferences.Editor editor=sharedPreferences.edit();
-
-        JSONArray jsonArray=new JSONArray();
-
-        for (int i = 0; i < AC_imageData.size(); i++) {
-            jsonArray.put(AC_rotData.get(i));
-        }
-        if (!AC_rotData.isEmpty()) {
-            editor.putString("rotData", jsonArray.toString());
-        }else {
-            editor.putString("rotData", null);
-        }
-        editor.apply();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public ArrayList<Float> getSharedPreferences(){
-
-        SharedPreferences pref=getSharedPreferences("ImageData", MODE_PRIVATE);
-        String json=pref.getString("rotData", null);
-        ArrayList<Float> urls=new ArrayList<>();
-        if (json!=null){
-            try {
-                JSONArray a=new JSONArray(json);
-                for (int i = 0; i < a.length(); i++) {
-                    float url=a.optInt(i);
-                    urls.add(url);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return urls;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public ArrayList<Float> getAC_SharedPreferences(){
-
-        SharedPreferences pref=getSharedPreferences("AC_ImageData", MODE_PRIVATE);
-        String json=pref.getString("rotData", null);
-        ArrayList<Float> urls=new ArrayList<>();
-        if (json!=null){
-            try {
-                JSONArray a=new JSONArray(json);
-                for (int i = 0; i < a.length(); i++) {
-                    float url=a.optInt(i);
-                    urls.add(url);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return urls;
-    }
-
-    public void editRot(ArrayList<ImageData> imageData){
-
-        SharedPreferences sharedPreferences=getSharedPreferences("ImageData", MODE_PRIVATE);
-//        SharedPreferences.Editor editor=sharedPreferences.edit();
-
-        ArrayList<Float> rotData=new ArrayList<>();
-
-        JSONArray jsonArray=new JSONArray();
-
-        for (int i = 0; i < imageData.size(); i++) {
-            rotData.add(imageData.get(i).rotateNum);
-        }
-
-        for (int i = 0; i < imageData.size(); i++) {
-            jsonArray.put(rotData.get(i));
-        }
-
-        if (!rotData.isEmpty()) {
-//            editor.putString("rotData", jsonArray.toString());
-            sharedPreferences.edit().putString("rotData", jsonArray.toString()).apply();
-        }else {
-//            editor.putString("rotData", null);
-            sharedPreferences.edit().putString("rotData", null).apply();
-        }
-
-    }
-
-//    private boolean isExternalStorageWritable(){
-//        return Environment.getExternalStorageState()==Environment.MEDIA_MOUNTED;
-//    }
-//    private boolean isExternalStorageReadable(){
-//        return Environment.getExternalStorageState()==Environment.MEDIA_MOUNTED || Environment.getExternalStorageState()==Environment.MEDIA_MOUNTED_READ_ONLY;
-//    }
-
     public void setTransactionFragments(){
         FragmentTransaction tran = manager.beginTransaction();
-        switch (topNavClickNum){
-            case 0:{
+        switch (GALLERY_TYPE){
+            case "K":{
+                new_adapter.setType(GALLERY_TYPE);
                 if (fragments[0].isAdded()){
                     tran.remove(fragments[0]);
                     fragments[0]=new New_images_FG(imageData);
@@ -1075,19 +963,19 @@ public class GridViewGallery extends AppCompatActivity {
                 tran.replace(R.id.pager_gridview, fragments[0]);
 
             }break;
-            case 1:{
-                if (fragments[1].isAdded()){
-                    tran.remove(fragments[1]);
-                    fragments[1]=new Date_images_FG(imageData);
-                }
-                tran.replace(R.id.pager_gridview, fragments[1]);
-            }break;
-            case 2:{
+//            case 1:{
+//                if (fragments[1].isAdded()){
+//                    tran.remove(fragments[1]);
+//                    fragments[1]=new Date_images_FG(imageData);
+//                }
+//                tran.replace(R.id.pager_gridview, fragments[1]);
+//            }break;
+            case "D":{
+                new_adapter.setType(GALLERY_TYPE);
                 if (fragments[2].isAdded()){
                     tran.remove(fragments[2]);
-                    fragments[2]=new Android_images_FG(images, AC_imageData);
+                    fragments[2]=new Android_images_FG(imagesArr, AC_imageData);
 //                    fragments[2]=new Android_images_FG(testPath.getPath());
-
                 }
                 tran.replace(R.id.pager_gridview, fragments[2]);
             }break;
@@ -1099,18 +987,18 @@ public class GridViewGallery extends AppCompatActivity {
     public void click_locked(View view) {
             Toast.makeText(this, "저장되지 않은 정보가 있습니다.", Toast.LENGTH_SHORT).show();
     }
-//    public void selectGallery(){
-//        Intent intent=new Intent(Intent.ACTION_PICK);
-//        intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        intent.setType("image/*");
-//        startActivityForResult(intent, 200);
-//    }
 
     public ArrayList<ImageFolder> getImageFolders(){// 기본갤러리 데이터값 받아오는 부분
         ArrayList<ImageFolder> picFolders=new ArrayList<>();
         ArrayList<String> picPaths=new ArrayList<>();
         Uri allImagesUri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String[] projection={MediaStore.Images.ImageColumns.DATA, MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.Images.Media.BUCKET_ID};
+        String[] projection={
+                MediaStore.Images.ImageColumns.DATA,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                MediaStore.Images.Media.BUCKET_ID,
+                MediaStore.Images.Media.ORIENTATION
+        };
         Cursor cursor=getContentResolver().query(allImagesUri, projection, null, null, null);
 
         try {
@@ -1150,16 +1038,30 @@ public class GridViewGallery extends AppCompatActivity {
         return picFolders;
     }
 
+    public Uri getUriArr(){
+        String fileName=Uri.fromFile(direct).getPath()+lists[0].getName();
+        Uri fileUri=Uri.parse(fileName);
+        String filePath=fileUri.getPath();
+        Cursor cursor=getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, "_data="+filePath+"",null, null);
+        cursor.moveToNext();
+        int id=cursor.getInt(cursor.getColumnIndex("_id"));
+        Uri uri=ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+        return uri;
+    }
+
 
     public ArrayList<String> getAllShownImagesPath(){// 기본갤러리 사진 받아옴
         Uri uri;
         Cursor cursor;
-        int column_index_data, column_index_folder_name,column_index_path;
+        int column_index_data, column_index_folder_name,column_index_path,column_index_ori;
         int testName;
         ArrayList<String> listOfAllImages=new ArrayList<>();
         String absolutePathOfImage=null;
         uri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
         Log.e("URI", " - "+uri.toString());
+        Log.e("showDirect", uri.toString());
 
         String[] projection={
                 MediaStore.MediaColumns.DATA,
@@ -1167,6 +1069,7 @@ public class GridViewGallery extends AppCompatActivity {
                 MediaStore.Images.ImageColumns.RELATIVE_PATH,
                 MediaStore.Images.Media.RELATIVE_PATH,
                 MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.ORIENTATION
         };
         cursor=getContentResolver().query(uri, projection, null, null, null);
         column_index_data=cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -1174,6 +1077,7 @@ public class GridViewGallery extends AppCompatActivity {
 //        29버전 (Q)에서 사진 로드되지 않음=> android 11버전사용하는 디바이스는 android:requestLegacyExternalStorage="true" 하지 않아도 정상적으로 로드됨...
         column_index_path=cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.RELATIVE_PATH);
         testName=cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DISPLAY_NAME);
+        column_index_ori=cursor.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION);
 
         while (cursor.moveToNext()){
             absolutePathOfImage=cursor.getString(column_index_data);
@@ -1182,10 +1086,10 @@ public class GridViewGallery extends AppCompatActivity {
             Log.e("filePathError : ", " - 01 path :  "+cursor.getString(column_index_path));
             Log.e("filePathError : ", " - 02 name :  "+cursor.getString(testName));// 이거사용해서 삭제
             Log.e("filePathError : ", " - 03 data :  "+absolutePathOfImage);
-            AC_imageData.add(new ImageData(cursor.getString(testName), absolutePathOfImage, 0, cursor.getPosition()));
-//            Log.e("AC_imageData_Show", AC_imageData.get(cursor.getPosition()).ImageName);
-//            Log.e("AC_imageData_Show", AC_imageData.get(cursor.getPosition()).ImagePath);
-//            Log.e("AC_imageData_Show", AC_imageData.get(cursor.getPosition()).Position+"");
+            Log.e("getOri_cursor", ""+cursor.getString(column_index_ori));// 기본갤러리 회전값 가져오는 코드
+//            AC_imageData.add(new ImageData(cursor.getString(testName), absolutePathOfImage, 0, cursor.getPosition(), getOrientateionOfImage(cursor.getString(column_index_path)), getOrientateionOfImage(cursor.getString(column_index_path))));
+            AC_imageData.add(new ImageData(cursor.getString(testName), absolutePathOfImage, 0, cursor.getPosition(), "D"));
+            imageData.add(new ImageData(cursor.getString(testName), absolutePathOfImage, 0, cursor.getPosition(),"D"));
 //            absolutePathOfImage+=cursor.getString(testName);
             listOfAllImages.add(absolutePathOfImage);
         }
@@ -1210,7 +1114,7 @@ public class GridViewGallery extends AppCompatActivity {
         int idColumn=cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
         int displayNameColumn=cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 
-        Collections.reverse(AC_imageData);//    이미지 데이터 다시 뒤집어서 삭제할 Uri에 넣기.
+//        Collections.reverse(AC_imageData);//    이미지 데이터 다시 뒤집어서 삭제할 Uri에 넣기.
 
         while (cursor.moveToNext()) {
             long id=cursor.getLong(idColumn);
@@ -1227,31 +1131,13 @@ public class GridViewGallery extends AppCompatActivity {
         }catch (RecoverableSecurityException e){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 IntentSender intentSender=e.getUserAction().getActionIntent().getIntentSender();
-                try {
+                try {// 삭제 버튼 클릭시
                     startIntentSenderForResult(intentSender, DELETE_PERMISSION_REQUEST, null, 0, 0, 0, null);
                 } catch (IntentSender.SendIntentException sendIntentException) {
                     sendIntentException.printStackTrace();
                 }
             }
-
         }
-        //
-//        catch ( SecurityException se){
-//            boolean permission=true;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                permission= Settings.System.canWrite(this);
-//                if (permission){
-//                    Log.e("permission_se", "허용");
-//                }else {
-//                    Intent intent=new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-//                    intent.setData(Uri.parse("package"+getPackageName()));
-//                    startActivityForResult(intent, 2003);
-//                    permission=false;
-//                }
-//            }
-//        }
-
-
     }
 
     @Override
@@ -1261,13 +1147,19 @@ public class GridViewGallery extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Toast.makeText(this, "in_request", Toast.LENGTH_SHORT).show();
                 getContentResolver().delete(contentUri, null, null);
-                // 삭제는 성공하지만 뒤집기 이전에 파일이 삭제됨.
-                Collections.reverse(AC_imageData);
+                if (rotClickedNum==1){
+                    Collections.reverse(AC_imageData);
+                }
                 AC_imageData.remove(pagePosition);
-                images.remove(pagePosition);
-                android_adapter.imgDelete(pagePosition);
+                imagesArr.remove(pagePosition);
+                new_adapter.imgDelete(pagePosition);
                 commitClickFG();
+                returnVal=false;
+                outNum=1;
+                zoomOut=1;
             }
+        }else {// 삭제 거부시
+            Collections.reverse(AC_imageData);
         }
     }
 
@@ -1275,13 +1167,13 @@ public class GridViewGallery extends AppCompatActivity {
         ExifInterface exif=null;
         try {
             exif=new ExifInterface(filePath);
-        } catch (IOException e) {
+        } catch (IOException e) {// 경로 찾지 못할때 -1 리턴
             e.printStackTrace();
             return -1;
         }
 
         int orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
-
+        Log.e("getorientationExif", " - "+orientation);
         if (orientation != -1){
             switch (orientation){
                 case ExifInterface.ORIENTATION_ROTATE_90:return 90;
@@ -1290,7 +1182,51 @@ public class GridViewGallery extends AppCompatActivity {
             }
         }
         return 0;
-
     }
+
+    public void setOrientateionOfKidsLoveImage(String filePath, int rotVal){// 키즈사랑 갤러리에 이미지 저장시 회전값 저장하는법
+        ExifInterface ei;
+        try {
+            ei=new ExifInterface(filePath);
+            ei.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(rotVal));
+            ei.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public int getOrientationOfKidsLoveImage(String filePath){
+        ExifInterface ei;
+
+        String ori;
+        int returnVal=0;
+        try {
+            ei=new ExifInterface(filePath);
+            ori=ei.getAttribute(ExifInterface.TAG_ORIENTATION);
+            returnVal=Integer.parseInt(ori);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return returnVal;
+    }
+
+    class ImageLoadThread implements Runnable{// 이미지 로드 스레드
+        @Override
+        public void run() {
+            for (int i = 0; i < imagesArr.size(); i++) {
+                float num=getOrientateionOfImage(imagesArr.get(i));
+                AC_imageData.get(i).setRotateNum(num);
+                AC_imageData.get(i).setOrirotateNum(num);
+//            AC_imageData.get(i).setImageType(DEFAULT_TYPE);
+                Log.e("showDImageOri", " - ori "+getOrientateionOfImage(imagesArr.get(i))+" / name : "+imagesArr.get(i));
+            }
+            // 핸들러로 메시지 줬을때 터치할 수 있게 하기
+            imageloading=1;// 이미지 로드 왼료됨.
+//            Thread thread=new Thread(this);
+//            Log.e("getState", "- endRun : "+thread.getState()); => NEW
+        }
+    }
+
+
+
 
 }// class

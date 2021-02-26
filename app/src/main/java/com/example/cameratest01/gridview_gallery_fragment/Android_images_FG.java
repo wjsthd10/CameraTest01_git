@@ -14,14 +14,16 @@ import com.example.cameratest01.Kids_gallery.GridViewGallery;
 import com.example.cameratest01.R;
 import com.example.cameratest01.RC_Items.ImageData;
 import com.example.cameratest01.RC_Items.ImageFolder;
-import com.example.cameratest01.gridview_adapter.Android_Adapter;
+import com.example.cameratest01.gridview_adapter.New_Adapter;
+//import com.example.cameratest01.gridview_adapter.Android_Adapter;
 
 import java.util.ArrayList;
 
 public class Android_images_FG extends Fragment {
 
     RecyclerView recyclerView;
-    Android_Adapter adapter;
+//    Android_Adapter adapter;
+    New_Adapter new_adapter;
     GridViewGallery gridViewGallery;
     ArrayList<String> imageStr;
     ArrayList<ImageData> imageDataAC;
@@ -44,8 +46,9 @@ public class Android_images_FG extends Fragment {
 
         View view=inflater.inflate(R.layout.gridview_fg_android, container, false);
         recyclerView=view.findViewById(R.id.android_rc_image_grid);
-        adapter=new Android_Adapter(gridViewGallery, imageDataAC, imageStr);
-        recyclerView.setAdapter(adapter);
+        new_adapter=new New_Adapter(gridViewGallery, imageDataAC, imageStr);
+        new_adapter.setType("D");
+        recyclerView.setAdapter(new_adapter);
 
         return view;
     }
