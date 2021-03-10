@@ -33,6 +33,7 @@
         <!-- 카메라 엑티비티 회전 금지 지정 -->
         <activity
             android:name=".MyCameraApi2.CameraActivity_camera2"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -40,9 +41,11 @@
         </activity>
         <activity
             android:name=".Kids_gallery.GridViewGallery"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Kids_gallery.GalleryActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />

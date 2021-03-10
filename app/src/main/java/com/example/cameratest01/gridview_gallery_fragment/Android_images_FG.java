@@ -47,6 +47,12 @@ public class Android_images_FG extends Fragment {
         View view=inflater.inflate(R.layout.gridview_fg_android, container, false);
         recyclerView=view.findViewById(R.id.android_rc_image_grid);
         new_adapter=new New_Adapter(gridViewGallery, imageDataAC, imageStr);
+        Bundle bundle=getArguments();// 선택매뉴 눌러서 받아오는 번들 확인
+        if (bundle!=null){// 번들의 값이 있으면 타입 지정..
+            String type=bundle.getString("Type");
+            new_adapter.setSelectType(type);
+        }
+
         new_adapter.setType("D");
         recyclerView.setAdapter(new_adapter);
 

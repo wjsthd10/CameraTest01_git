@@ -5,11 +5,11 @@ import android.os.Parcelable;
 
 public class ImageData implements Parcelable {
 
-    public String ImageName="";
-    public String ImagePath="";
+    public String ImageName="";// 파일 이름
+    public String ImagePath="";// 파일 경로
     // 원본경로 비교위해서 추가
     public String basicPath="";
-    public int Check;
+    public int Check;// 0 : 선택안함, 1 : 선택함
     public int Position;
     public int Dposition;
     public int Rposition;
@@ -19,6 +19,24 @@ public class ImageData implements Parcelable {
     public float orirotateNum=0;// 이미지가 갖고있는 회전값
     public String imageType="";    // K:키즈사랑 갤러리, D:기본 갤러리
     public String imagesPath="";
+    public int sizeK=0;
+    public int sizeD=0;
+
+    public int getSizeK() {
+        return sizeK;
+    }
+
+    public void setSizeK(int sizeK) {
+        this.sizeK = sizeK;
+    }
+
+    public int getSizeD() {
+        return sizeD;
+    }
+
+    public void setSizeD(int sizeD) {
+        this.sizeD = sizeD;
+    }
 
     public String getImageType() {
         return imageType;

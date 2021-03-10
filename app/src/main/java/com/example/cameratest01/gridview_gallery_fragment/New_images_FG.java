@@ -1,6 +1,7 @@
 package com.example.cameratest01.gridview_gallery_fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +66,15 @@ public class New_images_FG extends Fragment {
             // 따라서 어뎁터에서 아이템 역순으로 돌려야함.
 
             adapter=new New_Adapter(gridViewGallery, imageData);// fragemtn의 activity 전달해서 에러난거임 activity생성해서 activity의 context전달.
-            recyclerView.setAdapter(adapter);
+            Bundle bundle=getArguments();
+            if (bundle!=null){
+                String SELECT_IMAGES=bundle.getString("Type");
+                adapter.setSelectType(SELECT_IMAGES);// 번들로 받아온 데이터 넘겨보기.
+            }
+//            Log.d("ShowTypeInNewFG", SELECT_IMAGES);
             adapter.setType("K");// 타입 지정
+            recyclerView.setAdapter(adapter);
+
 
             return view;
         }catch (Exception e){

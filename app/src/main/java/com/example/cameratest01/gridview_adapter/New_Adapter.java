@@ -53,27 +53,34 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     File direct;
 //    public int position=0;
     File[] lists;
-    ArrayList<ImageData> imageData_test;  //  키즈사랑 갤러리, 기본 갤러리 => 이거로 이미지 출력하기
+    ArrayList<ImageData> imageData_test=new ArrayList<>();  //  키즈사랑 갤러리, 기본 갤러리 => 이거로 이미지 출력하기
     ArrayList<ImageData> imageData;  //  전체 데이터 => 이거로 이미지 출력하지 않고 받아오기만 하고 분류는 setFlag에서 하기.....K, D로 분류
     ArrayList<String> imagesArr;     // 기본갤러리 이미지 데이터
 
     GridViewGallery gridViewGallery;  // GridViewGallery의 Activity 가져옴
     Fragment fragment;// 클릭시 크게 보여주는 프레그먼트
-    int countNum=0;// 리스트 사이즈
+    public int countNumK=0;// 리스트 사이즈
+    public int countNumD=0;
 
     ArrayList<Float> rotNumKidesImg=new ArrayList<>();
     // 타입 추가하기
-    private String TYPE="K";// K : 키즈사랑, D : 기본갤러리
+    public String TYPE="K";// K : 키즈사랑, D : 기본갤러리
     public String SELECT_TYPE="C";// C : 선택으로 택스트 보여질때, S : 전송으로 택스트 보여질때
 
     public void setType(String TYPE){
         this.TYPE=TYPE;
     }
+    public void setCountNumK(int countNum){
+        this.countNumK=countNum;
+    }
+    public void setCountNumD(int countNum){
+        this.countNumD=countNum;
+    }
 
     public void setSelectType(String TYPE){
-        this.SELECT_TYPE=TYPE;
-        Log.e("Click_S = ","setSelectType : "+SELECT_TYPE);
-        //notifyDataSetChanged();
+        SELECT_TYPE=TYPE;
+        Log.e("Click_Select = ","setSelectType : "+SELECT_TYPE);// 왜 정상적으로 나오는지 확인.
+        notifyDataSetChanged();
     }
 
     public String getSelectType() {
@@ -86,6 +93,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
         for (int i = 0; i < imageData.size(); i++) {
             setFlag(imageData.get(i).getImageType());
         }
+//        Log.e("inNewAdapterCountNum", " : "+countNum);
     }
 
     public void setItem(ArrayList<String> imagesArr, ArrayList<ImageData> imageData){// 삭제
@@ -94,27 +102,47 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     }
 
     public void setFlag(String flag){// 이거 하나로 데이터 구분하기...
-        imageData_test.clear();
+        Log.e("inSetFlags", " : inFlages - "+flag);
+        if (imageData_test!=null){
+            imageData_test.clear();
+        }
         if(flag.equals("K")){
             for (int i = 0; i < imageData.size(); i++) {
                 if(imageData.get(i).imageType.equals("K")){
                     imageData_test.add(imageData.get(i));
-                    countNum=imageData_test.size();
+//                    countNumK=imageData_test.size();
                 }
             }
-        }else{
+//            Log.e("inNewAdapterCountNum", " : "+countNum);
+//            countNumK=imageData_test.size();
+            Log.e("countNumShow", " countNum_K : "+imageData_test.size());
+        }
+        if (flag.equals("D")){
             for (int i = 0; i < imageData.size(); i++) {
                 if(imageData.get(i).imageType.equals("D")){
                     imageData_test.add(imageData.get(i));
-                    countNum=imageData_test.size();
+//                    countNumD=imageData_test.size();
                 }
             }
+//            Log.e("inNewAdapterCountNum", " : "+countNum);
+//            countNumD=imageData_test.size();
+            Log.e("countNumShow", " countNum_D : "+countNumD);
         }
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData) {// 키즈사랑 갤러리 어뎁터 생성자
         this.context = context;
         this.imageData = imageData;
+//        Log.e("inNewAdapterCountNum", " : "+countNumK);
+
+        for (int i = 0; i < imageData.size(); i++) {
+            if(imageData.get(i).imageType.equals("K")){
+                imageData_test.add(imageData.get(i));
+//                    countNumK=imageData_test.size();
+            }
+        }
+
+        Log.d("imageDataSize", imageData_test.size()+"");
 
         direct=new File(context.getFilesDir(), "CameraTest01"+File.separator+"kidsLove");
         Log.e("direct File : ", direct.listFiles().length+"");
@@ -123,6 +151,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
         }
         lists=direct.listFiles();
         Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
+        countNumK=lists.length;
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData, ArrayList<String> imagesArr) { // 기본갤러리 어뎁터 생성자
@@ -146,7 +175,8 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Log.e("Click_S = ", "0>  Gallery : "+TYPE+" |select : "+this.SELECT_TYPE);
-
+        Log.e("typeVal", "- inBind : "+TYPE);
+        Log.e("Click_S", " : inBind : "+SELECT_TYPE);
         VH vh= (VH) holder;
         GridViewGallery activity=(GridViewGallery) context;
 
@@ -172,8 +202,8 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 //                    vh.iv.setImageBitmap(bitmap);
 //                속도가 무지 느려짐...
 
-                    Log.e("activity_data_show", " - degree : "+activity.direct.toString());
-                    Log.e("activity_data_show", " - degree : "+activity.direct.list()[position]);
+//                    Log.e("activity_data_show", " - degree : "+activity.direct.toString());
+//                    Log.e("activity_data_show", " - degree : "+activity.direct.list()[position]);
 
                 }catch (Exception e){
                     e.printStackTrace();
@@ -190,7 +220,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
         }
 
 
-        if (SELECT_TYPE.equals("C")){// 선택 일때 이미지 클릭 리스너들..
+        if (getSelectType().equals("C")){// 선택 일때 이미지 클릭 리스너들..
             Log.e("Click_S", " : inC : "+SELECT_TYPE);
             vh.check.setVisibility(View.GONE);
             vh.zoom.setVisibility(View.GONE);
@@ -209,7 +239,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                         bundle.putStringArrayList("images", imagesArr);
                     }else {
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("imageData", imageData);
+                        bundle.putParcelableArrayList("imageData", imageData_test);
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();
@@ -236,7 +266,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
             });
 
         }
-        if (SELECT_TYPE.equals("S")){// 전송일때 이미지 클릭 이벤트들
+        if (getSelectType().equals("S")){// 전송일때 이미지 클릭 이벤트들
             Log.e("Click_S", " : inS : "+SELECT_TYPE);
             vh.check.setVisibility(View.VISIBLE);
             vh.zoom.setVisibility(View.VISIBLE);
@@ -271,13 +301,13 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Log.e("showPositionInAdapter", "  po : "+position);
                     // viewpager fragmet로 작업하기. + adapter
                     Bundle bundle=new Bundle();
-                    if (TYPE.equals("D")){
+                    if (TYPE.equals("D")){// 기본갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
                         bundle.putParcelableArrayList("AC_imageData", imageData);// AC_imageData
                         bundle.putStringArrayList("images", imagesArr);
-                    }else {
+                    }else {// 키즈사랑갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("imageData", imageData);
+                        bundle.putParcelableArrayList("imageData", imageData_test);
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();
@@ -311,11 +341,6 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     @Override
     public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {// 화면에서 보여지지 않게 되는 아이템
         super.onViewDetachedFromWindow(holder);
-//        Log.e("startViewNum : ", "onViewDetachedFrom");
-//        Log.e("Detached : ", holder.getAdapterPosition()+"");
-//
-////        Log.e("re_test : ", "D_adapterPos_D  "+holder.getAdapterPosition());
-//        Log.e("re_test : ", "D_layoutPos_D   "+holder.getLayoutPosition());
     }
 
 
@@ -344,12 +369,19 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
     @Override
     public int getItemCount() {
-        if (countNum==0){
-            return imageData.size();
+//        if (countNum==0){
+//            return imageData.size();
+//        }else {
+//            return countNum;
+//        }
+        if (TYPE.equals("K")){
+            Log.e("typeVal", "- inCount_I : "+TYPE+" : "+countNumK);
+            return this.countNumK;
         }else {
-            return countNum;
+            Log.e("typeVal", "- inCount_E : "+TYPE+" : "+countNumD);
+            GridViewGallery ac=(GridViewGallery)context;
+            return ac.imagesArr.size();
         }
-
     }
 
     @Override

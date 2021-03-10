@@ -13,7 +13,7 @@
         android:id="@+id/toolbar_grid_gallery"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#295AD8"
+        android:background="@color/kidsLove_color"
         android:theme="@style/CustomToolbarColorSet"
         app:layout_collapseMode="pin"
         app:menu="@menu/grid_gallery_toolbar_icons"

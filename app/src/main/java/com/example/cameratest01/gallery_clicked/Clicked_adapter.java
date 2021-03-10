@@ -37,7 +37,7 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
         this.position = position;
     }
 
-    public Clicked_adapter(@NonNull FragmentManager fm, Context context, ArrayList<ImageData> imageData, int position, ArrayList<String> images) {
+    public Clicked_adapter(@NonNull FragmentManager fm, Context context, ArrayList<ImageData> imageData, int position, ArrayList<String> images) {// cuntNumK따로 보내줘야함.
         super(fm);
         this.context = context;
         activity=(GridViewGallery) context;
@@ -68,17 +68,17 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
 
     @Override
     public int getCount() {
-        if (activity.GALLERY_TYPE.equals("D")){
+        if (activity.GALLERY_TYPE.equals("D")){// 기본갤러리일때
             Log.e("GALLERY_TYPE_SHOW", " - "+activity.GALLERY_TYPE);
             try {
                 return images.size();
             }catch (NullPointerException e) {
-                return imageData.size();
+                return images.size();
             }
-        }else {
+        }else {// 키즈사랑 갤러리일때
             Log.e("GALLERY_TYPE_SHOW", " - "+activity.GALLERY_TYPE);
             try {
-                return imageData.size();
+                return imageData.size();// 여기에 새로받은 키즈사랑갤러리 이미지 리스트 사이즈 입력해야함.
             }catch (NullPointerException e){
                 return images.size();
             }

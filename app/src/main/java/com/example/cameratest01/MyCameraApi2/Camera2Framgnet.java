@@ -400,7 +400,12 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
         btnItemLay=view.findViewById(R.id.rc_cameraButton_lay);
 
         Toolbar toolbar=view.findViewById(R.id.camera2_Toolbar);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        try {
+            ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         actionBar=((AppCompatActivity)getActivity()).getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(true);
