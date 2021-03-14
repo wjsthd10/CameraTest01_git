@@ -256,8 +256,13 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     gridViewGallery.toolbar.setBackgroundColor(ContextCompat.getColor(gridViewGallery, R.color.custom_toolbar_c));
                     gridViewGallery.toolbar.setTitleTextColor(ContextCompat.getColor(gridViewGallery,R.color.custom_toolbar_c));
                     // 메뉴 버튼 변경
-                    Menu menu=gridViewGallery.toolbar.getMenu();
-                    menu.removeGroup(R.id.grid_toolbar_menu);
+//                    Menu menu=gridViewGallery.toolbar.getMenu();
+//                    menu.removeGroup(R.id.grid_toolbar_menu);// 메뉴버튼 지우지 않고 안보이게 변경
+                    // 툴바 메뉴 안보이게 변경.
+                    gridViewGallery.sendMenu.setVisible(false);
+                    gridViewGallery.deletMenu.setVisible(false);
+                    gridViewGallery.cancelMeun.setVisible(false);
+
 //                menu.add(R.id.bigimg_click_menu, R.id.rotate, 0, "");
 //                gridViewGallery.toolbar.inflateMenu(R.menu.fg_bigimg_clicked_menu);
                     gridViewGallery.zoomOut=0;
@@ -324,8 +329,13 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     gridViewGallery.toolbar.setBackgroundColor(ContextCompat.getColor(gridViewGallery, R.color.custom_toolbar_c));
                     gridViewGallery.toolbar.setTitleTextColor(ContextCompat.getColor(gridViewGallery,R.color.custom_toolbar_c));
                     // 메뉴 버튼 변경
-                    Menu menu=gridViewGallery.toolbar.getMenu();
-                    menu.removeGroup(R.id.grid_toolbar_menu);
+//                    Menu menu=gridViewGallery.toolbar.getMenu();
+//                    menu.removeGroup(R.id.grid_toolbar_menu);
+
+                    gridViewGallery.sendMenu.setVisible(false);
+                    gridViewGallery.deletMenu.setVisible(false);
+                    gridViewGallery.cancelMeun.setVisible(false);
+
 //                menu.add(R.id.bigimg_click_menu, R.id.rotate, 0, "");
 //                gridViewGallery.toolbar.inflateMenu(R.menu.fg_bigimg_clicked_menu);
                     gridViewGallery.zoomOut=0;

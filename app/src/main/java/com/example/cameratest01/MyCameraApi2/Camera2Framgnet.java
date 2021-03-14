@@ -123,7 +123,9 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
     CircleImageView gallery;
     ImageView btnListShow;
     RecyclerView btnList;
-    SimpleDateFormat dateFormat=new SimpleDateFormat("yyMMddHHmmss_");
+    SimpleDateFormat dateFormat=new SimpleDateFormat("yyMMdd_HHmmss_");
+//    SimpleDateFormat folderNameDate=new SimpleDateFormat("yyMMdd");
+//    SimpleDateFormat fileNameDate=new SimpleDateFormat("HHmmss");
     String fileName;
     ArrayList<String> strArr=new ArrayList<>();
     ArrayList<RC_CameraButton_items> buttonItems=new ArrayList<>();
@@ -720,7 +722,7 @@ public class Camera2Framgnet extends Fragment implements View.OnClickListener, A
 
     private void takePicture(){// 사진 촬영시에 포커스 고정, 저장될 파일 이름 지정
         lockFocus();
-        fileName=dateFormat.format(new Date())+"test_"+"001_"+"002_";// 원생 이름을 앞으로 이동시켜서 저장
+        fileName="kd_"+dateFormat.format(new Date())+"_test_"+"001_"+"002_";// 원생 이름을 앞으로 이동시켜서 저장
         strArr.add(fileName);
         mFile=new File(direct, fileName+".jpg");
     }

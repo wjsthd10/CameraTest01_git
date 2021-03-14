@@ -24,7 +24,6 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
     ArrayList<String> images;
     GridViewGallery activity;
 
-
     public Clicked_adapter(@NonNull FragmentManager fm) {
         super(fm);
     }
@@ -73,19 +72,18 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
             try {
                 return images.size();
             }catch (NullPointerException e) {
-                return images.size();
+                return imageData.size();
             }
         }else {// 키즈사랑 갤러리일때
             Log.e("GALLERY_TYPE_SHOW", " - "+activity.GALLERY_TYPE);
             try {
                 return imageData.size();// 여기에 새로받은 키즈사랑갤러리 이미지 리스트 사이즈 입력해야함.
             }catch (NullPointerException e){
-                return images.size();
+                return imageData.size();
             }
 
         }
     }
-
 
     @Override
     public void imgDelete(int position) {

@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <group android:id="@+id/grid_toolbar_menu">
-        <item android:id="@+id/send" android:title="선택" app:showAsAction="always"/>
-        <item android:id="@+id/delete" android:title="삭제" app:showAsAction="always" android:visible="false"/>
-        <item android:id="@+id/cancel" android:title="취소" app:showAsAction="always" android:visible="false"/>
+        <item android:id="@+id/send" android:title="선택" app:showAsAction="always" android:visible="true"/>
+        <item android:id="@+id/delete" android:title="삭제" app:showAsAction="always" android:visible="true"/>
+        <item android:id="@+id/cancel" android:title="취소" app:showAsAction="always" android:visible="true"/>
     </group>
 
 </menu>
