@@ -54,6 +54,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 //    public int position=0;
     File[] lists;
     ArrayList<ImageData> imageData_test=new ArrayList<>();  //  키즈사랑 갤러리, 기본 갤러리 => 이거로 이미지 출력하기
+
     ArrayList<ImageData> imageData;  //  전체 데이터 => 이거로 이미지 출력하지 않고 받아오기만 하고 분류는 setFlag에서 하기.....K, D로 분류
     ArrayList<String> imagesArr;     // 기본갤러리 이미지 데이터
 
@@ -152,13 +153,14 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
         lists=direct.listFiles();
         Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
         countNumK=lists.length;
+//        Collections.reverse(this.imageData);
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData, ArrayList<String> imagesArr) { // 기본갤러리 어뎁터 생성자
+//        Collections.reverse(imageData);
         this.context = context;
         this.imageData = imageData;
         this.imagesArr = imagesArr;
-        Collections.reverse(imageData);
     }
 
     @NonNull
@@ -212,11 +214,16 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
         }else if (TYPE.equals("D")){// 기본갤러리 이미지 리스트 보여주는 부분
 //            Collections.reverse(imagesArr);
-            Glide.with(context)
-                    .load(imagesArr.get(position))
-                    .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))
-                    .placeholder(R.drawable.ic_baseline_no_image_24).into(vh.iv);// 사진보여줌.
-            Log.e("getOrirotateNum", " - "+imageData.get(position).getOrirotateNum()+" / name : "+imageData.get(position).getImageName());
+            try {
+                Glide.with(context)
+                        .load(imagesArr.get(position))
+                        .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))// imageData대신 test출력함
+                        .placeholder(R.drawable.ic_baseline_no_image_24).into(vh.iv);// 사진보여줌.
+                Log.e("getOrirotateNum", " - "+imageData.get(position).getOrirotateNum()+" / name : "+imageData.get(position).getImageName());
+            }catch (Exception e){
+//                Glide.with(context).load()
+            }
+
         }
 
 
@@ -379,19 +386,24 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
     @Override
     public int getItemCount() {
-//        if (countNum==0){
-//            return imageData.size();
+
+//        if (TYPE.equals("K")){
+////            Log.e("typeVal", "- inCount_I : "+TYPE+" : "+countNumK);
+////            return this.countNumK;
+//            if (countNumK==0){
+//                return imageData.size();
+//            }else {
+//                return countNumK;
+//            }
 //        }else {
-//            return countNum;
+//            if (countNumD!=0){
+//                return countNumD;
+//            }
+//            Log.e("typeVal", "- inCount_E : "+TYPE+" : "+countNumD);
+//            GridViewGallery ac=(GridViewGallery)context;
+//            return ac.imagesArr.size();
 //        }
-        if (TYPE.equals("K")){
-            Log.e("typeVal", "- inCount_I : "+TYPE+" : "+countNumK);
-            return this.countNumK;
-        }else {
-            Log.e("typeVal", "- inCount_E : "+TYPE+" : "+countNumD);
-            GridViewGallery ac=(GridViewGallery)context;
-            return ac.imagesArr.size();
-        }
+        return imageData_test.size();
     }
 
     @Override
