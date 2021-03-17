@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class New_images_FG extends Fragment {
 
-    RecyclerView recyclerView;
+    public RecyclerView recyclerView;
     New_Adapter adapter;
     ArrayList<String> strArr;
     GridViewGallery gridViewGallery;
@@ -59,6 +59,7 @@ public class New_images_FG extends Fragment {
 //        Toast.makeText(gridViewGallery, "createView", Toast.LENGTH_SHORT).show();
         try {
             recyclerView=view.findViewById(R.id.new_rc_image_grid);
+
 //        GridLayoutManager gm=new GridLayoutManager(gridViewGallery, 4, GridLayoutManager.VERTICAL, true);
 //        gm.scrollToPosition(0);//
 //        recyclerView.setLayoutManager(gm);
@@ -78,20 +79,46 @@ public class New_images_FG extends Fragment {
             adapter.setType("K");// 타입 지정
             adapter.setCountNumK(countNum);
             adapter.setFlag("K");
+            recyclerView.addOnScrollListener(scrollListener);
             recyclerView.setAdapter(adapter);
-
 
             return view;
         }catch (Exception e){
-
+            e.printStackTrace();
         }
         return view;
     }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (gridViewGallery.firstCounNum!=0){
+            recyclerView.scrollToPosition(gridViewGallery.firstCounNum);
+        }
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {// 4.
         super.onActivityCreated(savedInstanceState);
     }
+
+    RecyclerView.OnScrollListener scrollListener=new RecyclerView.OnScrollListener() {// 스크롤 내릴때 플로팅버튼 안보이게 설정.
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {// newState 1: 이동시작, 2: 이동중, 0: 이동종료
+            super.onScrollStateChanged(recyclerView, newState);
+            Log.w("showLayouts", "L");
+            LinearLayoutManager layoutManager=LinearLayoutManager.class.cast(recyclerView.getLayoutManager());
+            int totalItemCount=layoutManager.getItemCount();//리스트의 개수 확인
+            int lastVisible=layoutManager.findLastCompletelyVisibleItemPosition();// 리스트뷰에 마지막으로 보여지는 아이템 번호...
+            Log.w("lastVisibleShow", "lastVisible : "+lastVisible+" - totalItemCount : "+totalItemCount+" - newState : "+newState);
+            gridViewGallery.setFirstCounNum(layoutManager.findFirstCompletelyVisibleItemPosition());
+            if (lastVisible>=totalItemCount-1 || newState==1){// 리스트의 개수보다 마지막에 보여지는 번호가 크거나 같으면 동작
+                gridViewGallery.floatingButton.setVisibility(View.GONE);
+            }else if (newState==0){//lastVisible<totalItemCount-1
+                gridViewGallery.floatingButton.setVisibility(View.VISIBLE);
+            }
+
+        }
+    };
+
 }

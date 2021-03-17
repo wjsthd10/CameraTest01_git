@@ -191,6 +191,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                         imageData.get(position).ImageName=lists[position].getName();
                         imageData.get(position).ImagePath=lists[position].getAbsolutePath();
                     }
+                    //todo 여기서 indexOutOfBoundsException나옴,...
                     Glide.with(context)
                             .load(lists[position])
                             .transform(new RotateTransformation(imageData.get(position).getRotateNum()))
@@ -209,6 +210,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
                 }catch (Exception e){
                     e.printStackTrace();
+                    return;
                 }
 
 
@@ -250,6 +252,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();
+                    gridViewGallery.floatingButton.setVisibility(View.GONE);// 큰이미지 보여줄때 플로팅 버튼 보여지지 않게 설정
                     fragment.setArguments(bundle);
                     FragmentManager manager=gridViewGallery.getSupportFragmentManager();
                     FragmentTransaction transaction=manager.beginTransaction();
@@ -311,6 +314,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                 public void onClick(View v) {// 1. 클릭시 뷰페이저 프레그먼트 보여줌
 //                Toast.makeText(context, "이미지 확대", Toast.LENGTH_SHORT).show();
                     Log.e("showPositionInAdapter", "  po : "+position);
+
                     // viewpager fragmet로 작업하기. + adapter
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){// 기본갤러리일때 보낼 데이터
@@ -323,6 +327,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();
+                    gridViewGallery.floatingButton.setVisibility(View.GONE);// 큰이미지 보여줄때 플로팅 버튼 보여지지 않게 설정
                     fragment.setArguments(bundle);
                     FragmentManager manager=gridViewGallery.getSupportFragmentManager();
                     FragmentTransaction transaction=manager.beginTransaction();
@@ -353,6 +358,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
 
     }// onbindviewholder...
+
 
 
     @Override

@@ -50,7 +50,6 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
 //        this.context = context;
 //    }
 
-
     @NonNull
     @Override
     public Fragment getItem(int position) {// 새로 생성되는 포지션
@@ -81,7 +80,6 @@ public class Clicked_adapter extends FragmentStatePagerAdapter implements PagerI
             }catch (NullPointerException e){
                 return imageData.size();
             }
-
         }
     }
 
