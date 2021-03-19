@@ -22,6 +22,7 @@ import com.example.cameratest01.RC_Items.ImageData;
 import com.example.cameratest01.gridview_adapter.New_Adapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class New_images_FG extends Fragment {
 
@@ -65,6 +66,7 @@ public class New_images_FG extends Fragment {
 //        recyclerView.setLayoutManager(gm);
             // 메니저를 통해서 역순으로 변경하면 상단에 빈공간이 생기고 하단부터 스크롤 시작하는 현상
             // 따라서 어뎁터에서 아이템 역순으로 돌려야함.
+
 
             adapter=new New_Adapter(gridViewGallery, imageData);// fragemtn의 activity 전달해서 에러난거임 activity생성해서 activity의 context전달.
             int countNum=0;

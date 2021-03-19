@@ -96,8 +96,8 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
 //            Toast.makeText(context, "test", Toast.LENGTH_SHORT).show();
 //            Log.e("rotChac", "returnVal in");
             Bundle bundle=getArguments();
-            imageData=bundle.getParcelableArrayList("imageData");
-            AC_imageData=bundle.getParcelableArrayList("AC_imageData");
+            imageData= (ArrayList<ImageData>) bundle.getSerializable("imageData");
+            AC_imageData= (ArrayList<ImageData>) bundle.getSerializable("AC_imageData");
             position=bundle.getInt("position");
             degree=bundle.getInt("degree");
             images=bundle.getStringArrayList("images");

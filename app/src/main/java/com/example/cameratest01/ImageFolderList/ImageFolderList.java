@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.cameratest01.R;
+import com.example.cameratest01.RC_Items.ImageData;
 
 import java.util.ArrayList;
 
@@ -23,6 +24,16 @@ public class ImageFolderList extends AppCompatActivity {
     ImageFolderAdapter adapter;
 
     ArrayList<String> folderLists;
+    ArrayList<ImageData> imageData;
+    String folderName=null;
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +42,6 @@ public class ImageFolderList extends AppCompatActivity {
         setLayout();// 폴더리스트 레이아웃 설정.
         setData();
         setAdapter();
-
     }
 
     private void setLayout(){// 화면 설정.
@@ -48,21 +58,28 @@ public class ImageFolderList extends AppCompatActivity {
 
     private void setData() {// 데이터 받기
         Intent intent=getIntent();
-        Bundle bundle=intent.getExtras();
-        folderLists=bundle.getStringArrayList("imageFolders");// 폴더리스트 경로를 받아온다.
-        // folderLists 널포인트 에러나옴....
+        folderLists=intent.getStringArrayListExtra("imageFolders");// 폴더리스트 경로를 받아온다.
+//        imageData=intent.getParcelableArrayListExtra("imageData");
+        imageData=(ArrayList<ImageData>) intent.getSerializableExtra("imageData");
+
     }
 
     private void setAdapter() {// 어뎁터 설정
-        adapter=new ImageFolderAdapter(folderLists, this);
+        adapter=new ImageFolderAdapter(folderLists,this,imageData);
+        adapter.notifyDataSetChanged();
+//        adapter=new ImageFolderAdapter(imageData, this);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
-            case android.R.id.home:onBackPressed();break;
+            case android.R.id.home:
+                onBackPressed();
+                finish();
+            break;
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

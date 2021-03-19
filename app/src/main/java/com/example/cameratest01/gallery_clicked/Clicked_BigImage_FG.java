@@ -51,10 +51,10 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
         viewPager=view.findViewById(R.id.bigimage_pager_clicked);
 
         Bundle bundle=getArguments();
-        imageData=bundle.getParcelableArrayList("imageData");
+        imageData= (ArrayList<ImageData>) bundle.getSerializable("imageData");
         position=bundle.getInt("position");
         images=bundle.getStringArrayList("images");
-        AC_imageData=bundle.getParcelableArrayList("AC_imageData");
+        AC_imageData= (ArrayList<ImageData>) bundle.getSerializable("AC_imageData");
 
         if (gridViewGallery.GALLERY_TYPE.equals("D")){// 개본 갤러리 일때 실행
             adapter=new Clicked_adapter(getChildFragmentManager(), getActivity(), AC_imageData, position, images);

@@ -3,7 +3,9 @@ package com.example.cameratest01.RC_Items;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class ImageData implements Parcelable {
+import java.io.Serializable;
+
+public class ImageData implements Serializable {
 
     public String ImageName="";// 파일 이름
     public String ImagePath="";// 파일 경로
@@ -21,6 +23,55 @@ public class ImageData implements Parcelable {
     public String imagesPath="";
     public int sizeK=0;
     public int sizeD=0;
+
+    // folderLost추가하기
+    public String folderName="";// 폴더이름
+    public String folderPath="";// 폴더경로
+    public int folderCount=0;// 폴더가 갖고있는 파일 개수
+
+    public String getBasicPath() {
+        return basicPath;
+    }
+
+    public void setBasicPath(String basicPath) {
+        this.basicPath = basicPath;
+    }
+
+    public String getImagesPath() {
+        return imagesPath;
+    }
+
+    public void setImagesPath(String imagesPath) {
+        this.imagesPath = imagesPath;
+    }
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    public String getFolderPath() {
+        return folderPath;
+    }
+
+    public void setFolderPath(String folderPath) {
+        this.folderPath = folderPath;
+    }
+
+    public int getFolderCount() {
+        return folderCount;
+    }
+
+    public void setFolderCount(int folderCount) {
+        this.folderCount = folderCount;
+    }
+
+//    public static Creator<ImageData> getCREATOR() {
+//        return CREATOR;
+//    }
 
     public int getSizeK() {
         return sizeK;
@@ -45,14 +96,9 @@ public class ImageData implements Parcelable {
     public void setImageType(String imageType) {
         this.imageType = imageType;
     }
-//    public ImageData(String imageName, String imagePath, int check, int position, int dposition, int rposition) {
-//        ImageName = imageName;
-//        ImagePath = imagePath;
-//        Check = check;
-//        Position = position;
-//        Dposition = dposition;
-//        Rposition = rposition;
-//    }
+
+    public ImageData() {
+    }
 
     public ImageData(String imageName, String imagePath, int check, int position, String imageType) {
         this.ImageName = imageName;
@@ -60,6 +106,16 @@ public class ImageData implements Parcelable {
         this.Check = check;
         this.Position = position;
         this.imageType=imageType;
+    }
+
+    public ImageData(String imageName, String imagePath, int check, int position, String imageType, String folderName, String folderPath) {
+        this.ImageName = imageName;
+        this.ImagePath = imagePath;
+        this.Check = check;
+        this.Position = position;
+        this.imageType=imageType;
+        this.folderName=folderName;
+        this.folderPath=folderPath;
     }
 
     public ImageData(String imageName, String imagePath, int check, int position, int rotateNum, float orirotateNum, String imageType) {
@@ -82,32 +138,32 @@ public class ImageData implements Parcelable {
         orirotateNum=in.readFloat();
     }
 
-    public static final Creator<ImageData> CREATOR = new Creator<ImageData>() {
-        @Override
-        public ImageData createFromParcel(Parcel in) {
-            return new ImageData(in);
-        }
+//    public static final Creator<ImageData> CREATOR = new Creator<ImageData>() {
+//        @Override
+//        public ImageData createFromParcel(Parcel in) {
+//            return new ImageData(in);
+//        }
+//
+//        @Override
+//        public ImageData[] newArray(int size) {
+//            return new ImageData[size];
+//        }
+//    };
 
-        @Override
-        public ImageData[] newArray(int size) {
-            return new ImageData[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(ImageName);
-        dest.writeString(ImagePath);
-        dest.writeInt(Check);
-        dest.writeInt(Position);
-        dest.writeInt(Dposition);
-        dest.writeInt(Rposition);
-    }
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(Parcel dest, int flags) {
+//        dest.writeString(ImageName);
+//        dest.writeString(ImagePath);
+//        dest.writeInt(Check);
+//        dest.writeInt(Position);
+//        dest.writeInt(Dposition);
+//        dest.writeInt(Rposition);
+//    }
 
     public String getImageName() {
         return ImageName;

@@ -129,6 +129,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 //            countNumD=imageData_test.size();
             Log.e("countNumShow", " countNum_D : "+countNumD);
         }
+        Log.e("countNumShow", " imageDataSize : "+imageData.size());
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData) {// 키즈사랑 갤러리 어뎁터 생성자
@@ -151,22 +152,23 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
             direct.mkdirs();
         }
         lists=direct.listFiles();
-        Collections.reverse(Arrays.asList(lists));// 파일 내부에 있는 데이터 역순으로 돌림
+        Collections.reverse(Arrays.asList(lists));// 키즈사랑 갤러리에 있는 데이터 역순으로 돌림
+
+        Log.w("ShowReverse", "reversed");
         countNumK=lists.length;
-//        Collections.reverse(this.imageData);
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData, ArrayList<String> imagesArr) { // 기본갤러리 어뎁터 생성자
-//        Collections.reverse(imageData);
+
         this.context = context;
         this.imageData = imageData;
         this.imagesArr = imagesArr;
+//        Collections.reverse(this.imageData);// 갱신할때마다 뒤집어짐.
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View itemView= LayoutInflater.from(context).inflate(R.layout.grid_image_item, parent, false);
         // 받아온 타입에 따라서 VH의 형태 변경 가능하다.
         VH holder=new VH(itemView);
@@ -191,7 +193,6 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                         imageData.get(position).ImageName=lists[position].getName();
                         imageData.get(position).ImagePath=lists[position].getAbsolutePath();
                     }
-                    //todo 여기서 indexOutOfBoundsException나옴,...
                     Glide.with(context)
                             .load(lists[position])
                             .transform(new RotateTransformation(imageData.get(position).getRotateNum()))
@@ -215,10 +216,10 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
 
         }else if (TYPE.equals("D")){// 기본갤러리 이미지 리스트 보여주는 부분
-//            Collections.reverse(imagesArr);
+
             try {
                 Glide.with(context)
-                        .load(imagesArr.get(position))
+                        .load(imageData.get(position).getImagePath())
                         .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))// imageData대신 test출력함
                         .placeholder(R.drawable.ic_baseline_no_image_24).into(vh.iv);// 사진보여줌.
                 Log.e("getOrirotateNum", " - "+imageData.get(position).getOrirotateNum()+" / name : "+imageData.get(position).getImageName());
@@ -244,11 +245,11 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("AC_imageData", imageData);// AC_imageData
+                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
                         bundle.putStringArrayList("images", imagesArr);
                     }else {
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("imageData", imageData_test);
+                        bundle.putSerializable("imageData", imageData_test);
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();
@@ -319,11 +320,11 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){// 기본갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("AC_imageData", imageData);// AC_imageData
+                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
                         bundle.putStringArrayList("images", imagesArr);
                     }else {// 키즈사랑갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
-                        bundle.putParcelableArrayList("imageData", imageData_test);
+                        bundle.putSerializable("imageData", imageData_test);
                     }
 
                     gridViewGallery=(GridViewGallery)v.getContext();

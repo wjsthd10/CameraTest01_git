@@ -59,6 +59,11 @@ public class Android_images_FG extends Fragment {
         if (bundle!=null){// 번들의 값이 있으면 타입 지정..
             String type=bundle.getString("Type");
             countNun=bundle.getInt("CountNum");
+            ArrayList<ImageData> images;
+            images=(ArrayList<ImageData>) bundle.getSerializable("images");
+            if (images!=null){
+                new_adapter.setItem(images);
+            }
             Log.w("showSelectType", "inFG : "+type);
             new_adapter.setSelectType(type);
         }
