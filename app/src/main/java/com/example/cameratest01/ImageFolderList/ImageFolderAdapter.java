@@ -36,19 +36,29 @@ public class ImageFolderAdapter extends RecyclerView.Adapter {
         this.folderLists = folderLists;
         this.context = context;
         this.imageData=imageData;
+        Log.w("imageDataSize", imageData.size()+"");
 
         ArrayList<String> folderNames=new ArrayList<>();
+
         for (int i = 0; i < imageData.size(); i++) {
             if (imageData.get(i).getImageType().equals("D")){// 기본갤러리의 데이터만
                 Log.w("inContains", "inAdapter : "+imageData.get(i).getImagePath());
                 if (!folderNames.contains(imageData.get(i).getFolderName())){// 중복되는 폴더 없이 저장.
                     folderNames.add(imageData.get(i).getFolderName());
                     folderData.add(imageData.get(i));
-                    Log.w("ShowI", i+"");
+                    Log.w("ShowI", i+" : "+imageData.get(i).getImageType());
                 }
             }
         }
-
+        folderData.add(new ImageData(
+                imageData.get(0).getImageName(),
+                imageData.get(0).getImagePath(),
+                imageData.get(0).getCheck(),
+                imageData.get(0).getPosition(),
+                "D",
+                "기본갤러리",
+                null
+        ));
     }// 생성자
 
 

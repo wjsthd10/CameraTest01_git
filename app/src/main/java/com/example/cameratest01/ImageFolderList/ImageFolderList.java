@@ -65,7 +65,7 @@ public class ImageFolderList extends AppCompatActivity {
     }
 
     private void setAdapter() {// 어뎁터 설정
-        adapter=new ImageFolderAdapter(folderLists,this,imageData);
+        adapter=new ImageFolderAdapter(folderLists,this, imageData);
         adapter.notifyDataSetChanged();
 //        adapter=new ImageFolderAdapter(imageData, this);
         recyclerView.setAdapter(adapter);

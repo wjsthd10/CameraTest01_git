@@ -20,7 +20,7 @@
     </style>
 
     <style name="FloatingButton" parent="Theme.AppCompat">
-        <item name="android:src">@drawable/ic_baseline_photo_24</item>
+        <item name="android:src">@drawable/ic_baseline_photo_library_24</item>
 
     </style>
 

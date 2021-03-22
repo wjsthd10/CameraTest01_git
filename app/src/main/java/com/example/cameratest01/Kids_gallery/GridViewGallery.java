@@ -96,7 +96,8 @@ import okhttp3.internal.Util;
 // todo 툴바 색상 변경, ImageData클래스명 변경, 이미지 저장시에 기존경로 추가로 데이터 저장하기, SCALABLELAYOUT사용해서 layout구성하기,
 //  같은 이미지 회전하여 저장할때 다른이름으로 저장되게 하기, 이미지 로드할때 스레드 완료되지 않으면 기본갤러리 클릭되지 않게 하기.
 //  이미지리스트 보여줄때 날짜 보여주기.토스트로 잠깐 보여주는것.
-//  선택한 폴더의 이미지 선택하여 전송가능하도록 변경해야함 아마 데이터 변경해야할듯..
+//  선택한 폴더의 이미지 리스트 클릭시 폴더내부에 있는 이미지로 큰이미지 보여주기..
+
 
 public class GridViewGallery extends AppCompatActivity {
 
@@ -151,11 +152,9 @@ public class GridViewGallery extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setData();// 이미지 데이터 set
-        //getDatta();
         setFragments();// fragment배치
         setLayout();// 레이아웃 배치
         setEvent();
-
     }// onCreate...
 
     private void setEvent() {
@@ -460,7 +459,7 @@ public class GridViewGallery extends AppCompatActivity {
                                             if (AC_imageData.get(i).getCheck()==1){
                                                 // 여기에 파일 옮기는 코드작성?
 
-                                                Collections.reverse(AC_imageData);
+//                                                Collections.reverse(AC_imageData);// 뒤집기..
 
                                                 FileOutputStream fOut=null;
                                                 File file=new File(AC_imageData.get(i).getImagePath());
@@ -479,6 +478,7 @@ public class GridViewGallery extends AppCompatActivity {
                                                     Log.w("showByteT", bytes.toString());
 
                                                     fOut.write(bytes);
+                                                    Collections.reverse(imageData);// 이미지 키즈사랑 갤러리로 추가할때 데이터 순서 변경
                                                     imageData.add(new ImageData(
                                                             AC_imageData.get(i).getImageName(),
                                                             AC_imageData.get(i).getImagePath(),
@@ -486,12 +486,13 @@ public class GridViewGallery extends AppCompatActivity {
                                                             AC_imageData.get(i).getPosition(),
                                                             "K"
                                                     ));
+                                                    Collections.reverse(imageData);
                                                     Log.w("showByteF", imageData.get(imageData.size()-1).getImagePath());
                                                     fOut.close();
 
                                                     Log.w("showByteC", imageData.get(imageData.size()-1).getImagePath());
 
-                                                    Collections.reverse(AC_imageData);
+//                                                    Collections.reverse(AC_imageData);// 전송완료 후 뒤집기
 
                                                 } catch (FileNotFoundException e) {
                                                     Log.w("FileNotFoundException", e.toString());
@@ -829,7 +830,7 @@ public class GridViewGallery extends AppCompatActivity {
                     deleteUri();// 기본갤러리에서 사진삭제
                     if (imageDeleteDenial.equals("D")){
                         Log.w("showReverse", "in imageDelete");
-                        Collections.reverse(AC_imageData);// 기본갤러리에서 이미지 삭제할때 리스트 뒤집기.
+//                        Collections.reverse(AC_imageData);// 기본갤러리에서 이미지 삭제할때 리스트 뒤집기.
                     }
 
                 }
@@ -1038,8 +1039,6 @@ public class GridViewGallery extends AppCompatActivity {
                         pagePosition=0;
     //                    tran.commit();// 밖에있었음
                         break;
-                    }else {
-
                     }
             }
 
@@ -1171,9 +1170,9 @@ public class GridViewGallery extends AppCompatActivity {
     public void setTransactionFragments(ArrayList<ImageData> imageData, ArrayList<ImageData> AC_imageData){
         FragmentTransaction tran = manager.beginTransaction();
         ArrayList<ImageData> imageDataAC=AC_imageData;
-        if (images.size()>0){// 갤러리 리스트 중에 선택한 갤러리 있으면 데이터 변경
-            imageDataAC=images;
-        }
+//        if (images.size()>0){// 갤러리 리스트 중에 선택한 갤러리 있으면 데이터 변경
+//            imageDataAC=images;
+//        }
 
         switch (GALLERY_TYPE){
             case "K":{
@@ -1383,10 +1382,8 @@ public class GridViewGallery extends AppCompatActivity {
 //            Log.w("showImageFolders", imageFolders.toString());
             listOfAllImages.add(absolutePathOfImage);
         }
-
-
         Collections.reverse(listOfAllImages);
-        Collections.reverse(AC_imageData);// 임시로 부여함.
+        Collections.reverse(AC_imageData);// 리스트에 이미지 정보 처음 받아올때 뒤집기.
 //
         return listOfAllImages;
     }
@@ -1407,13 +1404,13 @@ public class GridViewGallery extends AppCompatActivity {
         int displayNameColumn=cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 
 
-        if (imageDeleteDenial.equals("D")){
-            Log.w("showReverse", "in deleteUri");
-            Collections.reverse(AC_imageData);
-            imageDeleteDenial="A";
-        }else {
-            Collections.reverse(AC_imageData);//    이미지 데이터 다시 뒤집어서 삭제할 Uri에 넣기.
-        }
+//        if (imageDeleteDenial.equals("D")){
+//            Log.w("showReverse", "in deleteUri");
+//            Collections.reverse(AC_imageData);
+//            imageDeleteDenial="A";
+//        }else {
+//            Collections.reverse(AC_imageData);//    이미지 데이터 다시 뒤집어서 삭제할 Uri에 넣기.
+//        }// 처음 받아올때 뒤집기때문에 주석처리...
 
         while (cursor.moveToNext()) {
             long id=cursor.getLong(idColumn);
@@ -1459,43 +1456,51 @@ public class GridViewGallery extends AppCompatActivity {
                         outNum=1;
                         zoomOut=1;
                         imageDeleteDenial="A";
-                        Collections.reverse(AC_imageData);// 이미지 데이터 삭제처리 후 데이터 뒤집기.
-                    }
+//                        Collections.reverse(AC_imageData);// 이미지 데이터 삭제처리 후 데이터 뒤집기.
+                    }break;
                 }else {// 삭제 거부시
                     if (imageDeleteDenial.equals("A")){
                         Log.d("DeleteDenial", imageDeleteDenial);
                         Log.w("showReverse", "in Result_else");
+//                        Collections.reverse(AC_imageData);
+//                        imageDeleteDenial="D";
+                    }else {
                         Collections.reverse(AC_imageData);
-                        imageDeleteDenial="D";
                     }
-                }
-            }
+                }break;
+            }// case 1033
             case 3000:{
                 if (resultCode==RESULT_OK){// 성공적으로 선택한 갤러리정보 받아옴.
-                    String folderName=data.getStringExtra("folderName");
+                    String folderName=data.getStringExtra("folderName");// 선택한 폴더 경로
+                    selectFolderName=folderName;
                     if (images.size()>0){
                         images.clear();
                     }
-//                    AC_imageData.clear();
-                    for (int i = 0; i < AC_imageData.size(); i++) {
-                        Log.w("showFolderName", i+")" + AC_imageData.get(i).getFolderPath()+" / "+folderName);
-                        if (AC_imageData.get(i).getFolderPath().equals(folderName)){
-                            images.add(AC_imageData.get(i));
-                            Log.w("inContainsT", "AC : "+folderName+AC_imageData.get(i).getImageName());
-                            Log.w("inContainsT", "IM : "+images.get(images.size()-1).getImagePath());
-                            Log.w("inContainsT", "================================================== ");
+                    if (selectFolderName==null){
+//                        GALLERY_TYPE="D";
+                        setTransactionFragments(imageData, AC_imageData);
+                        Log.w("inCase3000", "NULL : "+imageData.size()+"");
+                    }else {
+//                      AC_imageData.clear();
+                        for (int i = 0; i < AC_imageData.size(); i++) {
+                            Log.w("showFolderName", i+")" + AC_imageData.get(i).getFolderPath()+" / "+folderName);
+                            if (AC_imageData.get(i).getFolderPath().equals(folderName)){
+                                images.add(AC_imageData.get(i));
+                                Log.w("inContainsT", "AC : "+folderName+AC_imageData.get(i).getImageName());
+                                Log.w("inContainsT", "IM : "+images.get(images.size()-1).getImagePath());
+                                Log.w("inContainsT", "================================================== ");
+                            }
                         }
+                        Log.w("inContains", "size : "+AC_imageData.size()+" / "+imageData.size());
+                        Log.w("inCase3000", "NOTNULL : "+imageData.size()+"");
+                        Collections.reverse(images);
+                        setTransactionFragments(imageData,imageData);
                     }
-                    Log.w("inContains", "size : "+AC_imageData.size()+" / "+imageData.size());
-                    Collections.reverse(images);
-                    setTransactionFragments(imageData,images);
-
                 }else {
                     Log.w("resultCode", resultCode+"");
                 }
-            }
-
-        }
+            }break;// case 3000
+        }// swich
 
 
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/new_img" android:title="키즈사랑앨범" android:icon="@drawable/ic_white_bookmark_border_24" android:iconTint="@color/white"/>
+    <item android:id="@+id/new_img" android:title="키즈사랑앨범" android:icon="@drawable/ic_baseline_loyalty_24" android:iconTint="@color/white"/>
 <!--    <item android:id="@+id/date_img" android:title="날짜" android:icon="@drawable/ic_baseline_calendar_today_24" android:iconTint="@color/white"/>-->
-    <item android:id="@+id/android_img" android:title="기본갤러리" android:icon="@drawable/ic_baseline_android_24" android:iconTint="@color/white"/>
+    <item android:id="@+id/android_img" android:title="기본갤러리" android:icon="@drawable/ic_baseline_photo_24" android:iconTint="@color/white"/>
 
 </menu>

@@ -103,6 +103,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     }
 
     public void setFlag(String flag){// 이거 하나로 데이터 구분하기...
+        gridViewGallery=(GridViewGallery)context;
         Log.e("inSetFlags", " : inFlages - "+flag);
         if (imageData_test!=null){
             imageData_test.clear();
@@ -119,10 +120,23 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
             Log.e("countNumShow", " countNum_K : "+imageData_test.size());
         }
         if (flag.equals("D")){
-            for (int i = 0; i < imageData.size(); i++) {
-                if(imageData.get(i).imageType.equals("D")){
-                    imageData_test.add(imageData.get(i));
-//                    countNumD=imageData_test.size();
+            if (gridViewGallery.selectFolderName==null){
+                Log.w("setFlag", "inIfNull : "+imageData.size());
+                for (int i = 0; i < imageData.size(); i++) {
+                    Log.w("setFlag", "inIfNullType : "+imageData.get(i).getImageType());
+                    if(imageData.get(i).imageType.equals("D")){// 키즈사랑 갤러리가 들어옴..
+                        imageData_test.add(imageData.get(i));
+                        Log.w("setFlag", "NULL : "+imageData_test.size());
+                        //                    countNumD=imageData_test.size();
+                    }
+                }
+            }
+            else {// 선택한 폴더 이름값이 있을때
+                for (int i = 0; i < imageData.size(); i++) {
+                    if (imageData.get(i).getFolderPath().equals(gridViewGallery.selectFolderName)){
+                        imageData_test.add(imageData.get(i));
+                        Log.w("setFlag", "NOTNULL : "+imageData_test.size());
+                    }
                 }
             }
 //            Log.e("inNewAdapterCountNum", " : "+countNum);
@@ -245,7 +259,8 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){
                         bundle.putInt("position", position);
-                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+                        bundle.putSerializable("AC_imageData", imageData_test);// AC_imageData
                         bundle.putStringArrayList("images", imagesArr);
                     }else {
                         bundle.putInt("position", position);
@@ -320,7 +335,8 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){// 기본갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
-                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+                        bundle.putSerializable("AC_imageData", imageData_test);// AC_imageData
                         bundle.putStringArrayList("images", imagesArr);
                     }else {// 키즈사랑갤러리일때 보낼 데이터
                         bundle.putInt("position", position);

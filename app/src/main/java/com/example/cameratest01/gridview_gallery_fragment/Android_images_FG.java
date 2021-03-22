@@ -87,11 +87,14 @@ public class Android_images_FG extends Fragment {
             int totalItemCount=layoutManager.getItemCount();//리스트의 개수 확인
             int lastVisible=layoutManager.findLastCompletelyVisibleItemPosition();// 리스트뷰에 마지막으로 보여지는 아이템 번호...
             Log.w("lastVisibleShow", "lastVisible : "+lastVisible+" - totalItemCount : "+totalItemCount+" - newState : "+newState);
+            Log.w("firstCompletelyNum", layoutManager.findFirstCompletelyVisibleItemPosition()+"");
             gridViewGallery.setFirstCounNum(layoutManager.findFirstCompletelyVisibleItemPosition());
             gridViewGallery.setLastCounNum(lastVisible, totalItemCount);
-            if (lastVisible>=totalItemCount-1 || newState==1){// 리스트의 개수보다 마지막에 보여지는 번호가 크거나 같으면 동작
+            if (layoutManager.findFirstCompletelyVisibleItemPosition()==0 && newState==0){
+                gridViewGallery.floatingButton.setVisibility(View.VISIBLE);
+            } else if (lastVisible>=totalItemCount-1 || newState==1){// 리스트의 개수보다 마지막에 보여지는 번호가 크거나 같으면 동작
                 gridViewGallery.floatingButton.setVisibility(View.GONE);
-            }else if (newState==0){//lastVisible<totalItemCount-1
+            }else if (newState==0 ){//lastVisible<totalItemCount-1
                 gridViewGallery.floatingButton.setVisibility(View.VISIBLE);
             }
 

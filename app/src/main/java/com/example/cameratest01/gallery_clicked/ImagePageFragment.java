@@ -85,6 +85,7 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
         gridViewGallery=(GridViewGallery)view.getContext();
         context=gridViewGallery;
         iv=view.findViewById(R.id.image_pager);
+
 //        ArrayList<Float> floats=new ArrayList<>();
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 //            floats=gridViewGallery.getSharedPreferences();
@@ -117,7 +118,7 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
                 Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).getRotateNum())).into(iv);// 원래 degree사용했음
             }
 
-        }else {// 회전안눌렀을때 이미지 표시...
+        }else {// 회전 안눌렀을때 이미지 표시...
 //            Log.e("rotChac", "returnVal else");
             if (AC_imageData!=null && images!=null){// 기본갤러리 데이터있을때
                 if (AC_imageData.size()<=position) position=position-1;
