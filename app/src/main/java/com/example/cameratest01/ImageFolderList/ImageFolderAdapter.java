@@ -41,15 +41,23 @@ public class ImageFolderAdapter extends RecyclerView.Adapter {
         ArrayList<String> folderNames=new ArrayList<>();
 
         for (int i = 0; i < imageData.size(); i++) {
-            if (imageData.get(i).getImageType().equals("D")){// 기본갤러리의 데이터만
-                Log.w("inContains", "inAdapter : "+imageData.get(i).getImagePath());
+            Log.w("ImageFolderAdapter", i+") AllimgaeType : "+imageData.get(i).getImageType()+" , size : "+imageData.size());
+
+            if (imageData.get(i).getImageType().equals("D")){// 기본갤러리의 데이터만 받아오는 데이터 D로 변경해주기.
+//                Log.w("ImageFolderAdapter", i+")  imagePath : "+imageData.get(i).getImagePath());
                 if (!folderNames.contains(imageData.get(i).getFolderName())){// 중복되는 폴더 없이 저장.
                     folderNames.add(imageData.get(i).getFolderName());
                     folderData.add(imageData.get(i));
-                    Log.w("ShowI", i+" : "+imageData.get(i).getImageType());
+                    Log.w("ImageFolderAdapter", i+") if imageType : "+imageData.get(i).getImageType()+" / imagePath : "+imageData.get(i).getImagePath());
+                    // 정상적으로 출력될 리스트 정보가 들어옴.
                 }
+            }else {// 이미지가 갖고있는 타입이 K일때 여기로 빠짐
+                // 여기로만 빠지면 데이터 없는것임.
+                Log.w("ImageFolderAdapter", i+") else imageType : "+imageData.get(i).getImageType()+" / imagePath : "+imageData.get(i).getImagePath());
             }
+
         }
+
         folderData.add(new ImageData(
                 imageData.get(0).getImageName(),
                 imageData.get(0).getImagePath(),

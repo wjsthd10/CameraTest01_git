@@ -33,7 +33,7 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
 //    int pagePosition;
     Clicked_adapter adapter;
     int position;
-    ArrayList<String> images;
+//    ArrayList<String> images;
 
     // AC_ImageData로 정보 받아서 지워야함.....
 
@@ -53,11 +53,14 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
         Bundle bundle=getArguments();
         imageData= (ArrayList<ImageData>) bundle.getSerializable("imageData");
         position=bundle.getInt("position");
-        images=bundle.getStringArrayList("images");
+        ArrayList<ImageData> totalData= (ArrayList<ImageData>) bundle.getSerializable("totalImage");// 전체 이미지 데이터받아옴.
+
+//        images=bundle.getStringArrayList("images");
         AC_imageData= (ArrayList<ImageData>) bundle.getSerializable("AC_imageData");
 
         if (gridViewGallery.GALLERY_TYPE.equals("D")){// 개본 갤러리 일때 실행
-            adapter=new Clicked_adapter(getChildFragmentManager(), getActivity(), AC_imageData, position, images);
+//            adapter=new Clicked_adapter(getChildFragmentManager(), getActivity(), AC_imageData, position, images);
+            adapter=new Clicked_adapter(getChildFragmentManager(), getActivity(), AC_imageData, position);
             viewPager.setAdapter(adapter);
             viewPager.setCurrentItem(position);
 
@@ -76,12 +79,24 @@ public class Clicked_BigImage_FG extends Fragment {// 2. 뷰페이저를 갖고�
                 @Override
                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {// 여기서 메뉴작성
 
-                    gridViewGallery.pagePosition=position;// 변경된 페이지 번호 전달.
                     Log.e("D_pagePosition", " - "+position);
-                    if (AC_imageData.get(position).Check==0){
-                        Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_b_24).into(gridViewGallery.checkImgView);
-                    }else if (AC_imageData.get(position).Check==1){
-                        Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_w_24).into(gridViewGallery.checkImgView);
+                    if (gridViewGallery.selectFolderName==null){// 전체이미지일때
+                        gridViewGallery.pagePosition=position;// 변경된 페이지 번호 전달.
+                        if (AC_imageData.get(position).Check==0){
+                            Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_b_24).into(gridViewGallery.checkImgView);
+                        }else if (AC_imageData.get(position).Check==1){
+                            Glide.with(gridViewGallery).load(R.drawable.ic_check_circle_w_24).into(gridViewGallery.checkImgView);
+                        }
+                    }else {// 폴더 선택했을때
+                        for (int i = 0; i < totalData.size(); i++) {
+                            if (AC_imageData.get(position).getImageName().equals(totalData.get(i).getImageName())){
+//                                Log.w("ClickedBigImageFG", totalData.get(i).getImageName()+" : "+i);
+                                gridViewGallery.pagePosition=i;
+                                // todo 폴더에서 파일전송, 선택기능 정상적으로 동작하지만
+                                //  큰이미지로 보여줄때 선택했는지 안했는지 변경되지 않은상태로 남아있음
+                                //  그리고 선택버튼 클릭시 오래걸리는 현상있음...
+                            }
+                        }
                     }
                     gridViewGallery.bigImageToolbarItem_clear();
                 }

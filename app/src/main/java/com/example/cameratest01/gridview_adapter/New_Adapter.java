@@ -56,7 +56,8 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
     ArrayList<ImageData> imageData_test=new ArrayList<>();  //  키즈사랑 갤러리, 기본 갤러리 => 이거로 이미지 출력하기
 
     ArrayList<ImageData> imageData;  //  전체 데이터 => 이거로 이미지 출력하지 않고 받아오기만 하고 분류는 setFlag에서 하기.....K, D로 분류
-    ArrayList<String> imagesArr;     // 기본갤러리 이미지 데이터
+    public ArrayList<ImageData> totalImageData=new ArrayList<>();
+//    ArrayList<String> imagesArr;     // 기본갤러리 이미지 데이터
 
     GridViewGallery gridViewGallery;  // GridViewGallery의 Activity 가져옴
     Fragment fragment;// 클릭시 크게 보여주는 프레그먼트
@@ -97,10 +98,10 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 //        Log.e("inNewAdapterCountNum", " : "+countNum);
     }
 
-    public void setItem(ArrayList<String> imagesArr, ArrayList<ImageData> imageData){// 삭제
-        this.imagesArr=imagesArr;
-        this.imageData=imageData;
-    }
+//    public void setItem(ArrayList<String> imagesArr, ArrayList<ImageData> imageData){// 삭제
+//        this.imagesArr=imagesArr;
+//        this.imageData=imageData;
+//    }
 
     public void setFlag(String flag){// 이거 하나로 데이터 구분하기...
         gridViewGallery=(GridViewGallery)context;
@@ -144,6 +145,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
             Log.e("countNumShow", " countNum_D : "+countNumD);
         }
         Log.e("countNumShow", " imageDataSize : "+imageData.size());
+        notifyDataSetChanged();
     }
 
     public New_Adapter(Context context, ArrayList<ImageData> imageData) {// 키즈사랑 갤러리 어뎁터 생성자
@@ -176,7 +178,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
 
         this.context = context;
         this.imageData = imageData;
-        this.imagesArr = imagesArr;
+//        this.imagesArr = imagesArr;
 //        Collections.reverse(this.imageData);// 갱신할때마다 뒤집어짐.
     }
 
@@ -195,6 +197,7 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
         Log.e("Click_S = ", "0>  Gallery : "+TYPE+" |select : "+this.SELECT_TYPE);
         Log.e("typeVal", "- inBind : "+TYPE);
         Log.e("Click_S", " : inBind : "+SELECT_TYPE);
+        Log.w("NewAdapter", "onClick : "+imageData_test.get(position).getImageType());
         VH vh= (VH) holder;
         GridViewGallery activity=(GridViewGallery) context;
 
@@ -234,8 +237,9 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
             try {
                 Glide.with(context)
                         .load(imageData.get(position).getImagePath())
-                        .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))// imageData대신 test출력함
-                        .placeholder(R.drawable.ic_baseline_no_image_24).into(vh.iv);// 사진보여줌.
+                        .transform(new RotateTransformation(imageData.get(position).getOrirotateNum()))
+//                        .placeholder(R.drawable.ic_baseline_no_image_24)
+                        .into(vh.iv);// 사진보여줌.
                 Log.e("getOrirotateNum", " - "+imageData.get(position).getOrirotateNum()+" / name : "+imageData.get(position).getImageName());
             }catch (Exception e){
 //                Glide.with(context).load()
@@ -254,14 +258,18 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                 public void onClick(View v) {
                     // 1. 클릭시 뷰페이저 프레그먼트 보여줌
 //                Toast.makeText(context, "이미지 확대", Toast.LENGTH_SHORT).show();
-                    Log.e("showPositionInAdapter", "  po : "+position);
+
                     // viewpager fragmet로 작업하기. + adapter
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){
                         bundle.putInt("position", position);
-//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
                         bundle.putSerializable("AC_imageData", imageData_test);// AC_imageData
-                        bundle.putStringArrayList("images", imagesArr);
+                        if (totalImageData!=null){
+                            bundle.putSerializable("totalImage", totalImageData);
+                        }
+//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+//                        bundle.putStringArrayList("images", imagesArr);
+                        Log.w("NewAdater", "onClickInTypeD"+imageData_test.size());
                     }else {
                         bundle.putInt("position", position);
                         bundle.putSerializable("imageData", imageData_test);
@@ -335,9 +343,13 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                     Bundle bundle=new Bundle();
                     if (TYPE.equals("D")){// 기본갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
-//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
                         bundle.putSerializable("AC_imageData", imageData_test);// AC_imageData
-                        bundle.putStringArrayList("images", imagesArr);
+                        if (totalImageData!=null){
+                            bundle.putSerializable("totalImage", totalImageData);
+                        }
+//                        bundle.putSerializable("AC_imageData", imageData);// AC_imageData
+//                        bundle.putStringArrayList("images", imagesArr);
+                        Log.w("NewAdater", "onClickInTypeD"+imageData_test.size());
                     }else {// 키즈사랑갤러리일때 보낼 데이터
                         bundle.putInt("position", position);
                         bundle.putSerializable("imageData", imageData_test);
@@ -372,8 +384,6 @@ public class New_Adapter extends RecyclerView.Adapter implements PagerImageDelet
                 }// onclick_imageview
             });
         }
-
-
     }// onbindviewholder...
 
 

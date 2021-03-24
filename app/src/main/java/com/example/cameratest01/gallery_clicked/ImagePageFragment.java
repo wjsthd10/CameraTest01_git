@@ -53,12 +53,12 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
         this.position = position;
     }
 
-    public ImagePageFragment(Context context, ArrayList<ImageData> imageData, int position, ArrayList<String> images) {
-        this.context = context;
-        this.AC_imageData = imageData;
-        this.position = position;
-        this.images = images;
-    }
+//    public ImagePageFragment(Context context, ArrayList<ImageData> imageData, int position, ArrayList<String> images) {
+//        this.context = context;
+//        this.AC_imageData = imageData;
+//        this.position = position;
+//        this.images = images;
+//    }
 
     @Nullable
     @Override
@@ -102,14 +102,16 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
             position=bundle.getInt("position");
             degree=bundle.getInt("degree");
             images=bundle.getStringArrayList("images");
+
 //            iv.setRotation(degree);
 
             // 여기에 회전값 넣어서 이미지 보여주기...
             if (AC_imageData!=null && images !=null){
                 Log.e("ImgFGpager_Test", ", i : "+AC_imageData.get(position).getRotateNum());
+
                 if (AC_imageData.size()<=position) position=position-1;
 //                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).rotateNum)).into(iv);
-                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).getRotateNum())).into(iv);
+                Glide.with(context).load(AC_imageData.get(position).getImagePath()).transform(new RotateTransformation(AC_imageData.get(position).getRotateNum())).into(iv);
 //                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(270)).into(iv);
             }else if (imageData!=null){
                 Log.e("ImgFGpager_Test", ", i : "+imageData.get(position).getRotateNum());
@@ -121,11 +123,17 @@ public class ImagePageFragment extends Fragment {// 뷰페이저에 보여지는
         }else {// 회전 안눌렀을때 이미지 표시...
 //            Log.e("rotChac", "returnVal else");
             if (AC_imageData!=null && images!=null){// 기본갤러리 데이터있을때
+
+//                Log.w("ImagePageFragment", "if - images : "+images.get(position)+" , AC_imageData : "+AC_imageData.get(position).getImagePath());
+
                 if (AC_imageData.size()<=position) position=position-1;
                 int ori=getOrientateionOfImage(images.get(position));
-                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).getOrirotateNum())).into(iv);
+//                Glide.with(context).load(images.get(position)).transform(new RotateTransformation(AC_imageData.get(position).getOrirotateNum())).into(iv);
+                Glide.with(context).load(AC_imageData.get(position).getImagePath()).transform(new RotateTransformation(AC_imageData.get(position).getOrirotateNum())).into(iv);
 
             }else if (imageData!=null){
+
+                Log.w("ImagePageFragment", "else - imageData : "+imageData.get(position).getImagePath());
                 Log.e("ImgFGpager_Test", ", else if : "+imageData.get(position).getRotateNum());
                 if (imageData.size()<=position) position=position-1;// 페이저에서 이미지 삭제할때 마지막 이미지 삭제하면 index error나옴
                 Glide.with(context).load(imageData.get(position).ImagePath).transform(new RotateTransformation(imageData.get(position).getOrirotateNum())).into(iv);// sharedPreferences에서 받아온 회전값 사용.
